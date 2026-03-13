@@ -1527,7 +1527,7 @@ function delTrade(id) {
 // ── Price fetch ───────────────────────────────────────────────────────────────
 let _tsePrices = null, _otcPrices = null;
 
-function fetchWithTimeout(url, ms=4000) {
+function fetchWithTimeout(url, ms=8000) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, {cache:'no-cache', signal: ctrl.signal}).finally(() => clearTimeout(t));
