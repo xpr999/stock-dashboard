@@ -215,6 +215,8 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     📥 匯入<input type="file" accept=".json" onchange="importData(event)" style="display:none">
   </label>
   <div id="user-info" style="display:none;align-items:center;gap:8px">
+    <span id="readonly-badge" style="display:none;background:#f59e0b;color:#fff;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600">👁 唯讀</span>
+    <button id="share-btn" class="hbtn" onclick="openSharingModal()">👨‍👩‍👧 分享</button>
     <img id="user-avatar" width="26" height="26" style="border-radius:50%;border:2px solid rgba(255,255,255,0.5)">
     <button class="hbtn" onclick="signOutUser()">登出</button>
   </div>
@@ -521,6 +523,22 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
   </div>
 
 </main>
+
+<!-- ── Sharing Modal ── -->
+<div id="sharing-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:300">
+  <div style="background:#fff;border-radius:14px;padding:24px;width:90%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+    <h2 style="font-size:17px;margin-bottom:6px">👨‍👩‍👧 家人分享設定</h2>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:16px">加入的 Google Email 可以唯讀查看你的資料</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input id="viewer-email-input" type="email" placeholder="家人的 Gmail 地址" style="flex:1;padding:8px 12px;border:1px solid #dde1e7;border-radius:8px;font-size:14px;outline:none">
+      <button onclick="addViewer()" style="padding:8px 16px;background:#1565c0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">新增</button>
+    </div>
+    <div id="viewer-list" style="margin-bottom:16px;min-height:40px"></div>
+    <div style="display:flex;justify-content:flex-end">
+      <button onclick="document.getElementById('sharing-modal').style.display='none'" style="padding:8px 20px;border:1px solid #dde1e7;border-radius:8px;background:#fff;cursor:pointer;font-size:14px">關閉</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Login Screen ── -->
 <div id="login-screen" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1565c0,#0d47a1);align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0">
@@ -1805,6 +1823,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 let fbUser = null;
+let isReadOnly = false;
+let viewingUid = null;
 
 function signInWithGoogle() {
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
@@ -1848,6 +1868,73 @@ async function pushToFirestore(name, data) {
   } catch(e) { console.warn('Firestore push error:', e); }
 }
 
+// ── Sharing ────────────────────────────────────────────────────────────────────
+async function openSharingModal() {
+  document.getElementById('sharing-modal').style.display = 'flex';
+  await renderViewerList();
+}
+
+async function renderViewerList() {
+  const el = document.getElementById('viewer-list');
+  try {
+    const doc = await db.collection('directory').doc(fbUser.uid).get();
+    const viewers = doc.exists ? (doc.data().viewers || []) : [];
+    if (!viewers.length) {
+      el.innerHTML = '<p style="color:#9ca3af;font-size:13px">尚未新增任何家人</p>';
+    } else {
+      el.innerHTML = viewers.map(email => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:8px;margin-bottom:6px;font-size:13px">
+          <span>📧 ${email}</span>
+          <button onclick="removeViewer('${email}')" style="background:none;border:1px solid #fca5a5;color:#ef4444;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px">移除</button>
+        </div>`).join('');
+    }
+  } catch(e) { el.innerHTML = '<p style="color:#ef4444;font-size:13px">載入失敗</p>'; }
+}
+
+async function addViewer() {
+  const email = document.getElementById('viewer-email-input').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { alert('請輸入有效的 Gmail 地址'); return; }
+  try {
+    const ref = db.collection('directory').doc(fbUser.uid);
+    const doc = await ref.get();
+    const viewers = doc.exists ? (doc.data().viewers || []) : [];
+    if (viewers.includes(email)) { alert('已加入過了'); return; }
+    viewers.push(email);
+    await ref.set({ viewers, ownerEmail: fbUser.email });
+    document.getElementById('viewer-email-input').value = '';
+    await renderViewerList();
+  } catch(e) { alert('新增失敗：' + e.message); }
+}
+
+async function removeViewer(email) {
+  try {
+    const ref = db.collection('directory').doc(fbUser.uid);
+    const doc = await ref.get();
+    const viewers = (doc.data().viewers || []).filter(e => e !== email);
+    await ref.set({ viewers, ownerEmail: fbUser.email });
+    await renderViewerList();
+  } catch(e) { alert('移除失敗'); }
+}
+
+async function checkViewerAccess(email) {
+  try {
+    const snap = await db.collection('directory').where('viewers', 'array-contains', email).get();
+    if (!snap.empty) return snap.docs[0].id; // 回傳 ownerUid
+  } catch(e) {}
+  return null;
+}
+
+function applyReadOnly() {
+  isReadOnly = true;
+  document.getElementById('readonly-badge').style.display = '';
+  document.getElementById('share-btn').style.display = 'none';
+  // 隱藏所有編輯控制項
+  document.querySelectorAll('.badd,.bdel,.hbtn,.form-wrap').forEach(el => {
+    if (!el.closest('#user-info')) el.style.display = 'none';
+  });
+  document.getElementById('refreshBtn').style.display = '';
+}
+
 // Override saveData to also sync to Firestore
 const _origSaveData = saveData;
 saveData = function(name, d) {
@@ -1863,7 +1950,31 @@ auth.onAuthStateChanged(async user => {
     loginScreen.style.display = 'none';
     userInfo.style.display = 'flex';
     document.getElementById('user-avatar').src = user.photoURL || '';
+
+    // 先嘗試載入自己的資料
     await syncFromFirestore();
+    const hasOwnData = !!(await db.collection('users').doc(user.uid).collection('meta').doc('profiles').get().then(d => d.exists).catch(() => false));
+
+    if (!hasOwnData) {
+      // 沒有自己的資料 → 檢查是否有人分享給他
+      const ownerUid = await checkViewerAccess(user.email);
+      if (ownerUid) {
+        viewingUid = ownerUid;
+        // 載入 owner 的資料
+        const metaDoc = await db.collection('users').doc(ownerUid).collection('meta').doc('profiles').get();
+        if (metaDoc.exists) {
+          const m = metaDoc.data();
+          localStorage.setItem(LS_PROFILES, JSON.stringify(m.profiles || ['我的帳戶']));
+          if (m.current) localStorage.setItem(LS_CURRENT, m.current);
+        }
+        for (const name of getProfiles()) {
+          const doc = await db.collection('users').doc(ownerUid).collection('profiles').doc(name).get();
+          if (doc.exists) localStorage.setItem(dataKey(name), JSON.stringify(doc.data()));
+        }
+        applyReadOnly();
+      }
+    }
+
     currentProfile = getCurrentProfile();
     D = loadData(currentProfile);
     renderProfileSel();
