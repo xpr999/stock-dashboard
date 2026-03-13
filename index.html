@@ -1607,6 +1607,31 @@ async function loadTWSELiveBatch(codes) {
   return _livePrices;
 }
 
+// FinMind 批量報價（支援 CORS，不需 proxy）
+let _finmindPrices = null;
+async function loadFinMindBatch(codes) {
+  if (_finmindPrices) return _finmindPrices;
+  _finmindPrices = {};
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now() - 86400000*3).toISOString().slice(0,10);
+  await Promise.all(codes.map(async code => {
+    try {
+      const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${code}&start_date=${yesterday}`;
+      const r = await fetchWithTimeout(url);
+      if (!r.ok) return;
+      const j = await r.json();
+      const rows = j?.data;
+      if (!rows?.length) return;
+      const latest = rows[rows.length - 1];
+      const prev   = rows.length >= 2 ? rows[rows.length - 2] : null;
+      const price  = parseFloat(latest.close);
+      const prevP  = prev ? parseFloat(prev.close) : price;
+      if (price > 0) _finmindPrices[code] = { price, prev: prevP };
+    } catch(e) {}
+  }));
+  return _finmindPrices;
+}
+
 async function tryYahoo(code) {
   for (const suffix of ['.TW', '.TWO']) {
     const baseUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${code}${suffix}?interval=1d&range=5d`;
@@ -1639,16 +1664,17 @@ async function tryYahoo(code) {
 async function refreshPrices() {
   const btn = document.getElementById('refreshBtn');
   btn.textContent = '⏳ 更新中…'; btn.disabled = true;
-  _tsePrices = null; _otcPrices = null; _livePrices = null;
+  _tsePrices = null; _otcPrices = null; _livePrices = null; _finmindPrices = null;
   const codes = [...new Set(D.portfolio.map(s => s.code))];
-  await Promise.all([loadTSEPrices(), loadOTCPrices(), loadTWSELiveBatch(codes)]);
+  await Promise.all([loadTSEPrices(), loadOTCPrices(), loadTWSELiveBatch(codes), loadFinMindBatch(codes)]);
   const tseOk = !!_tsePrices, otcOk = !!_otcPrices;
   console.log('[報價] TWSE:', tseOk ? `${Object.keys(_tsePrices).length}筆` : '失敗',
               '| TPEx:', otcOk ? `${Object.keys(_otcPrices).length}筆` : '失敗');
 
   let fail = 0;
   const results = await Promise.all(codes.map(async code => {
-    let r = _livePrices?.[code] ?? null;         // TWSE 即時（批量，已載入）
+    let r = _livePrices?.[code] ?? null;          // TWSE 即時（批量）
+    if (!r) r = _finmindPrices?.[code] ?? null;  // FinMind（直接 CORS，免 proxy）
     if (!r) r = await tryYahoo(code);            // Yahoo 備用
     if (!r) r = await tryOpenAPI(code);          // 收盤資料最後備用
     return { code, r };
