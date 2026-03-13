@@ -1819,13 +1819,20 @@ async function syncFromFirestore() {
     const uid = fbUser.uid;
     const metaDoc = await db.collection('users').doc(uid).collection('meta').doc('profiles').get();
     if (metaDoc.exists) {
+      // Firestore 有資料 → 覆蓋 localStorage
       const m = metaDoc.data();
       localStorage.setItem(LS_PROFILES, JSON.stringify(m.profiles || ['我的帳戶']));
       if (m.current) localStorage.setItem(LS_CURRENT, m.current);
-    }
-    for (const name of getProfiles()) {
-      const doc = await db.collection('users').doc(uid).collection('profiles').doc(name).get();
-      if (doc.exists) localStorage.setItem(dataKey(name), JSON.stringify(doc.data()));
+      for (const name of getProfiles()) {
+        const doc = await db.collection('users').doc(uid).collection('profiles').doc(name).get();
+        if (doc.exists) localStorage.setItem(dataKey(name), JSON.stringify(doc.data()));
+      }
+    } else {
+      // Firestore 空的 → 把 localStorage 資料上傳
+      for (const name of getProfiles()) {
+        const d = loadData(name);
+        await pushToFirestore(name, d);
+      }
     }
   } catch(e) { console.warn('Firestore sync error:', e); }
 }
