@@ -2005,6 +2005,9 @@ auth.onAuthStateChanged(async user => {
     D = loadData(currentProfile);
     renderProfileSel();
     render();
+    // 進入後自動更新報價，之後每 5 分鐘自動更新
+    refreshPrices();
+    setInterval(refreshPrices, 5 * 60 * 1000);
   } else {
     fbUser = null;
     loginScreen.style.display = 'flex';
