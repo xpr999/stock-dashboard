@@ -1994,28 +1994,25 @@ auth.onAuthStateChanged(async user => {
     userInfo.style.display = 'flex';
     document.getElementById('user-avatar').src = user.photoURL || '';
 
-    // 先嘗試載入自己的資料
-    await syncFromFirestore();
-    const hasOwnData = !!(await db.collection('users').doc(user.uid).collection('meta').doc('profiles').get().then(d => d.exists).catch(() => false));
-
-    if (!hasOwnData) {
-      // 沒有自己的資料 → 檢查是否有人分享給他
-      const ownerUid = await checkViewerAccess(user.email);
-      if (ownerUid) {
-        viewingUid = ownerUid;
-        // 載入 owner 的資料
-        const metaDoc = await db.collection('users').doc(ownerUid).collection('meta').doc('profiles').get();
-        if (metaDoc.exists) {
-          const m = metaDoc.data();
-          localStorage.setItem(LS_PROFILES, JSON.stringify(m.profiles || ['我的帳戶']));
-          if (m.current) localStorage.setItem(LS_CURRENT, m.current);
-        }
-        for (const name of getProfiles()) {
-          const doc = await db.collection('users').doc(ownerUid).collection('profiles').doc(name).get();
-          if (doc.exists) localStorage.setItem(dataKey(name), JSON.stringify(doc.data()));
-        }
-        applyReadOnly();
+    // 先檢查是否為家人（viewer），避免空資料被誤上傳
+    const ownerUid = await checkViewerAccess(user.email.toLowerCase());
+    if (ownerUid) {
+      viewingUid = ownerUid;
+      // 載入 owner 的資料
+      const metaDoc = await db.collection('users').doc(ownerUid).collection('meta').doc('profiles').get();
+      if (metaDoc.exists) {
+        const m = metaDoc.data();
+        localStorage.setItem(LS_PROFILES, JSON.stringify(m.profiles || ['我的帳戶']));
+        if (m.current) localStorage.setItem(LS_CURRENT, m.current);
       }
+      for (const name of getProfiles()) {
+        const doc = await db.collection('users').doc(ownerUid).collection('profiles').doc(name).get();
+        if (doc.exists) localStorage.setItem(dataKey(name), JSON.stringify(doc.data()));
+      }
+      applyReadOnly();
+    } else {
+      // 自己的帳號 → 正常同步
+      await syncFromFirestore();
     }
 
     currentProfile = getCurrentProfile();
