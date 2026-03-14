@@ -235,6 +235,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <div class="card"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
     <div class="card"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
     <div class="card"><div class="lbl">🏦 淨資產</div><div class="val" id="c-net">—</div></div>
+    <div class="card"><div class="lbl">🎯 台股曝險</div><div class="val" id="c-exposure">—</div></div>
   </div>
 
   <!-- ── Tabs ── -->
@@ -257,7 +258,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
           <th>代號</th><th>備註</th>
           <th>產業</th><th>張數</th><th>成本價</th>
           <th>現價 ✎</th><th>漲跌%</th>
-          <th>市值</th><th>損益</th><th>損益%</th>
+          <th>市值</th><th>台股曝險</th><th>損益</th><th>損益%</th>
           <th>累計配息</th><th>含息投報率</th>
           <th></th>
         </tr></thead>
@@ -822,14 +823,24 @@ function renderSummary() {
   const ne = document.getElementById('c-net');
   ne.textContent = mkt ? fmtNT(net) : '—';
   ne.className = 'val ' + cls(net);
+
+  const EXPOSURE_MULTI = { '0050': 1, '00631L': 2, '00663L': 2, '00685L': 2 };
+  const totalExposure = D.portfolio.reduce((sum, s) => {
+    const multi = EXPOSURE_MULTI[s.code] ?? 0;
+    const p = s.price;
+    if (multi && p != null) sum += p * s.shares * 1000 * multi;
+    return sum;
+  }, 0);
+  document.getElementById('c-exposure').textContent = totalExposure > 0 ? fmtNT(totalExposure) : '—';
 }
 
 function renderPortfolio() {
   const tb = document.getElementById('port-body');
   if (!D.portfolio.length) {
-    tb.innerHTML = '<tr><td colspan="13" class="empty">尚無持股，請在下方新增</td></tr>';
+    tb.innerHTML = '<tr><td colspan="14" class="empty">尚無持股，請在下方新增</td></tr>';
     return;
   }
+  const EXPOSURE_MULTI = { '0050': 1, '00631L': 2, '00663L': 2, '00685L': 2 };
   tb.innerHTML = D.portfolio.map(s => {
     const p   = s.price;
     const pv  = s.prev;
@@ -845,6 +856,11 @@ function renderPortfolio() {
     const divTxt = div > 0 ? `<span class="div-badge">+NT$${fmtN(div)}</span>` : '—';
     const sectorLabel = getSector(s);
     const sectorColor = SECTOR_COLORS[sectorLabel] || '#9ca3af';
+    const multi = EXPOSURE_MULTI[s.code] ?? 0;
+    const exposure = (multi > 0 && mkt != null) ? mkt * multi : null;
+    const expTxt = exposure != null
+      ? `<span style="font-size:11px;color:var(--muted)">${multi}x</span> ${fmtNT(exposure)}`
+      : '—';
     return `<tr>
       <td><strong>${esc(s.code)}</strong></td>
       <td>${esc(s.note||'')}</td>
@@ -858,6 +874,7 @@ function renderPortfolio() {
         onchange="updatePrice('${s.id}',this.value)">${upd}</td>
       <td class="${cls(cp)}">${cp!=null?sign(cp)+fmtN(cp,2)+'%':'—'}</td>
       <td>${mkt!=null?fmtNT(mkt):'—'}</td>
+      <td>${expTxt}</td>
       <td class="${cls(pnl)}">${pnl!=null?fmtPnl(pnl):'—'}</td>
       <td class="${cls(pp)}">${pp!=null?sign(pp)+fmtN(pp,2)+'%':'—'}</td>
       <td class="div-col">${divTxt}</td>
