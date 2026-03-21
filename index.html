@@ -1682,7 +1682,15 @@ async function refreshPrices() {
   const btn = document.getElementById('refreshBtn');
   btn.textContent = '⏳ 更新中…'; btn.disabled = true;
   _tsePrices = null; _otcPrices = null; _livePrices = null; _finmindPrices = null;
-  const codes = [...new Set(D.portfolio.map(s => s.code))];
+
+  // 收集所有帳戶的持股代碼
+  const allProfiles = getProfiles();
+  const allProfileData = {};
+  for (const name of allProfiles) {
+    allProfileData[name] = (name === currentProfile) ? D : loadData(name);
+  }
+  const codes = [...new Set(Object.values(allProfileData).flatMap(d => d.portfolio.map(s => s.code)))];
+
   await Promise.all([loadTSEPrices(), loadOTCPrices(), loadTWSELiveBatch(codes), loadFinMindBatch(codes)]);
   const tseOk = !!_tsePrices, otcOk = !!_otcPrices;
   console.log('[報價] TWSE:', tseOk ? `${Object.keys(_tsePrices).length}筆` : '失敗',
@@ -1696,17 +1704,27 @@ async function refreshPrices() {
     if (!r) r = await tryOpenAPI(code);          // 收盤資料最後備用
     return { code, r };
   }));
+
+  const now = new Date().toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   for (const { code, r } of results) {
     if (r) {
-      D.portfolio.filter(s => s.code===code).forEach(s => {
-        s.prev  = r.prev != null ? Math.round(r.prev*100)/100 : (s.price ?? null);
-        s.price = Math.round(r.price*100)/100;
-        s.updatedAt = new Date().toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-      });
+      for (const [name, data] of Object.entries(allProfileData)) {
+        data.portfolio.filter(s => s.code===code).forEach(s => {
+          s.prev  = r.prev != null ? Math.round(r.prev*100)/100 : (s.price ?? null);
+          s.price = Math.round(r.price*100)/100;
+          s.updatedAt = now;
+        });
+      }
     } else { fail++; }
   }
+
+  // 儲存所有帳戶
+  for (const [name, data] of Object.entries(allProfileData)) {
+    saveData(name, data);
+  }
+  // 更新目前帳戶的 D 物件並存快照
+  D = allProfileData[currentProfile];
   saveSnapshot();
-  saveData(currentProfile, D);
   render();
   btn.textContent = fail===0 ? '🔄 更新報價' : `🔄 更新報價（${fail}筆失敗）`;
   btn.disabled = false;
