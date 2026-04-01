@@ -210,6 +210,21 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
 .log-ts { color: var(--muted); white-space: nowrap; min-width: 90px; }
 .log-action { font-weight: 600; white-space: nowrap; min-width: 70px; }
 .log-detail { color: var(--text); }
+/* ── Swap Wizard ── */
+.swap-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 300; }
+.swap-box { background: #fff; border-radius: 14px; padding: 24px; width: 94%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.swap-box h2 { font-size: 17px; margin-bottom: 16px; }
+.swap-section { margin-bottom: 14px; padding: 12px; border-radius: 8px; }
+.swap-sell { background: #fef2f2; border: 1px solid #fecaca; }
+.swap-buy  { background: #eff6ff; border: 1px solid #bfdbfe; }
+.swap-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.swap-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.swap-fg { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 80px; }
+.swap-fg label { font-size: 11px; color: var(--muted); }
+.swap-fg input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+.swap-fg input:focus { border-color: var(--primary); }
+.swap-summary { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: var(--muted); }
+.swap-btns { display: flex; gap: 8px; justify-content: flex-end; }
 /* ── Responsive ── */
 @media (max-width: 700px) {
   .chart-grid { grid-template-columns: 1fr; }
@@ -257,6 +272,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <div class="card"><div class="lbl">💹 已實現損益</div><div class="val" id="c-realized">NT$0</div></div>
     <div class="card"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
     <div class="card"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
+    <div class="card"><div class="lbl">💵 帳戶現金</div><div class="val" id="c-cash">NT$0</div></div>
     <div class="card"><div class="lbl">🏦 淨資產</div><div class="val" id="c-net">—</div></div>
     <div class="card"><div class="lbl">🎯 台股曝險</div><div class="val" id="c-exposure">—</div></div>
   </div>
@@ -380,9 +396,12 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
       </table>
     </div>
     <div class="form-wrap">
-      <h3>➕ 新增賣出／換股紀錄</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3>➕ 新增賣出／換股紀錄</h3>
+        <button class="badd" onclick="openSwapWizard()" style="background:#6366f1;font-size:12px;padding:5px 14px">🔄 換股精靈</button>
+      </div>
       <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
-        記錄已賣出或換股後的已實現損益。成本價會自動從持股帶入，可手動修改。
+        手動記錄單筆交易，或用「換股精靈」一鍵完成賣出＋買入。
       </p>
       <div class="fgrid">
         <div class="fg"><label>日期</label><input id="tr-date" type="date" class="short"></div>
@@ -611,6 +630,38 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
   </div>
 </div>
 
+<!-- ── Swap Wizard Modal ── -->
+<div id="swap-modal" class="swap-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="swap-box">
+    <h2>🔄 換股精靈</h2>
+    <div class="swap-section swap-sell">
+      <h3>📤 賣出</h3>
+      <div class="swap-row">
+        <div class="swap-fg"><label>日期</label><input id="sw-date" type="date"></div>
+        <div class="swap-fg"><label>股票代號</label><input id="sw-sell-code" placeholder="如 0050" oninput="swapAutoFill()"></div>
+      </div>
+      <div class="swap-row" style="margin-top:8px">
+        <div class="swap-fg"><label>張數</label><input id="sw-sell-shares" type="number" min="0.01" step="0.01" oninput="swapCalcSummary()"></div>
+        <div class="swap-fg"><label>賣出價（每股）</label><input id="sw-sell-price" type="number" step="0.01" oninput="swapCalcSummary()"></div>
+      </div>
+    </div>
+    <div class="swap-section swap-buy">
+      <h3>📥 買入</h3>
+      <div class="swap-row">
+        <div class="swap-fg"><label>股票代號</label><input id="sw-buy-code" placeholder="如 00631L"></div>
+        <div class="swap-fg"><label>張數</label><input id="sw-buy-shares" type="number" min="0.01" step="0.01" oninput="swapCalcSummary()"></div>
+        <div class="swap-fg"><label>買入價（每股）</label><input id="sw-buy-price" type="number" step="0.01" oninput="swapCalcSummary()"></div>
+      </div>
+    </div>
+    <div class="swap-summary" id="sw-summary">填入資料後自動試算</div>
+    <div class="swap-fg" style="margin-bottom:14px"><label>備註（選填）</label><input id="sw-note" placeholder="如 換股策略"></div>
+    <div class="swap-btns">
+      <button class="bcancel" onclick="document.getElementById('swap-modal').style.display='none'">取消</button>
+      <button class="bconfirm" onclick="executeSwap()">⚡ 一鍵換股</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Activity Log Modal ── -->
 <div id="log-modal" class="log-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="log-box">
@@ -653,6 +704,7 @@ function loadData(name) {
     snapshots:    d.snapshots    ?? [],
     capitalFlows: d.capitalFlows ?? [],
     activityLog:  d.activityLog  ?? [],
+    cashBalance:  d.cashBalance  ?? 0,
     nextId:       d.nextId       ?? 0,
     nextPid:      d.nextPid      ?? 0,
     nextDivId:    d.nextDivId    ?? 0,
@@ -951,11 +1003,15 @@ function renderSummary() {
   re.textContent = fmtPnl(realizedPnl);
   re.className = 'val ' + cls(realizedPnl);
 
+  const cash = D.cashBalance || 0;
+  document.getElementById('c-cash').textContent = 'NT$' + fmtN(cash);
+
   document.getElementById('c-loan').textContent   = 'NT$' + fmtN(loan);
   document.getElementById('c-credit').textContent = 'NT$' + fmtN(credit);
+  const netVal = (mkt || 0) + cash - totalDebt;
   const ne = document.getElementById('c-net');
-  ne.textContent = mkt ? fmtNT(net) : '—';
-  ne.className = 'val ' + cls(net);
+  ne.textContent = (mkt || cash) ? fmtNT(netVal) : '—';
+  ne.className = 'val ' + cls(netVal);
 
   const EXPOSURE_MULTI = { '0050': 1, '00631L': 2, '00663L': 2, '00685L': 2 };
   const totalExposure = D.portfolio.reduce((sum, s) => {
@@ -1102,7 +1158,8 @@ function saveSnapshot() {
   const totalIn  = flows.filter(f => f.type === 'in').reduce((a, f) => a + f.amount, 0);
   const totalOutF = flows.filter(f => f.type === 'out').reduce((a, f) => a + f.amount, 0);
   D.snapshots = D.snapshots.filter(p => p.date !== today);
-  D.snapshots.push({ date: today, value: Math.round(totalVal), cost: Math.round(totalCost), netInvested: totalIn - totalOutF });
+  const cashBal = D.cashBalance || 0;
+  D.snapshots.push({ date: today, value: Math.round(totalVal) + cashBal, cost: Math.round(totalCost), netInvested: totalIn - totalOutF, cash: cashBal });
   // 最多保留 365 筆
   if (D.snapshots.length > 365) D.snapshots = D.snapshots.slice(-365);
 }
@@ -1476,14 +1533,17 @@ function addStock() {
   if (!code || isNaN(shares) || isNaN(cost)) { alert('請填寫代號、張數、成本價'); return; }
   D.portfolio.push({ id: String(D.nextId++), code, shares, cost, note, sector: '', price: null, prev: null, updatedAt: null });
   logActivity('新增持股', `${code} ${shares}張 @ $${cost}${source === 'new' ? '（新資金）' : '（帳內）'}`);
-  // 新資金投入 → 自動建立資金流入紀錄
+  const buyAmt = Math.round(cost * shares * 1000);
   if (source === 'new') {
-    const amount = Math.round(cost * shares * 1000);
+    // 新資金投入 → 自動建立資金流入紀錄
     D.capitalFlows = D.capitalFlows || [];
     D.capitalFlows.push({
       id: String(D.nextFlowId++), date: new Date().toISOString().slice(0,10),
-      type: 'in', amount, note: `買入 ${code} ${shares}張`
+      type: 'in', amount: buyAmt, note: `買入 ${code} ${shares}張`
     });
+  } else {
+    // 帳內資金買入 → 扣減帳戶現金
+    D.cashBalance = (D.cashBalance || 0) - buyAmt;
   }
   saveData(currentProfile, D);
   document.getElementById('f-code').value   = '';
@@ -1704,14 +1764,19 @@ function addTrade() {
     ? `${code} → ${targetCode} ${shares}張 @ $${sellPrice} 損益${fmtPnl(pnl)}`
     : `${code} ${shares}張 @ $${sellPrice} 損益${fmtPnl(pnl)}`;
   logActivity(action, tradeDetail);
-  // 賣出 + 提領 → 自動建立資金流出紀錄
-  if (action === '賣出' && dest === 'withdraw') {
-    const outAmount = Math.round(sellPrice * shares * 1000);
-    D.capitalFlows = D.capitalFlows || [];
-    D.capitalFlows.push({
-      id: String(D.nextFlowId++), date,
-      type: 'out', amount: outAmount, note: `賣出 ${code} ${shares}張 提領`
-    });
+  // 賣出 → 現金增加
+  if (action === '賣出') {
+    const sellAmt = Math.round(sellPrice * shares * 1000);
+    D.cashBalance = (D.cashBalance || 0) + sellAmt;
+    // 提領 → 同時建立資金流出紀錄並扣減現金
+    if (dest === 'withdraw') {
+      D.cashBalance -= sellAmt;
+      D.capitalFlows = D.capitalFlows || [];
+      D.capitalFlows.push({
+        id: String(D.nextFlowId++), date,
+        type: 'out', amount: sellAmt, note: `賣出 ${code} ${shares}張 提領`
+      });
+    }
   }
   saveData(currentProfile, D);
 
@@ -1950,6 +2015,7 @@ function importData(evt) {
         creditLoans:  imp.creditLoans  ?? [],
         capitalFlows: imp.capitalFlows ?? [],
         activityLog:  imp.activityLog  ?? [],
+        cashBalance:  imp.cashBalance  ?? 0,
         snapshots:    imp.snapshots    ?? [],
         nextId:       imp.nextId       ?? imp.portfolio.length,
         nextPid:      imp.nextPid      ?? 0,
@@ -2072,6 +2138,133 @@ function calcTargetCustom() {
   </div>`;
 }
 
+// ── Swap Wizard ──────────────────────────────────────────────────────────────
+function openSwapWizard() {
+  document.getElementById('sw-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('sw-sell-code').value = '';
+  document.getElementById('sw-sell-shares').value = '';
+  document.getElementById('sw-sell-price').value = '';
+  document.getElementById('sw-buy-code').value = '';
+  document.getElementById('sw-buy-shares').value = '';
+  document.getElementById('sw-buy-price').value = '';
+  document.getElementById('sw-note').value = '';
+  document.getElementById('sw-summary').textContent = '填入資料後自動試算';
+  document.getElementById('swap-modal').style.display = 'flex';
+}
+
+function swapAutoFill() {
+  const code = document.getElementById('sw-sell-code').value.trim().toUpperCase();
+  const entry = D.portfolio.find(s => s.code === code);
+  if (entry) {
+    if (!document.getElementById('sw-sell-shares').value) {
+      document.getElementById('sw-sell-shares').value = entry.shares;
+    }
+    if (entry.price) {
+      document.getElementById('sw-sell-price').value = entry.price;
+    }
+  }
+  swapCalcSummary();
+}
+
+function swapCalcSummary() {
+  const sellShares = parseFloat(document.getElementById('sw-sell-shares').value) || 0;
+  const sellPrice  = parseFloat(document.getElementById('sw-sell-price').value) || 0;
+  const buyShares  = parseFloat(document.getElementById('sw-buy-shares').value) || 0;
+  const buyPrice   = parseFloat(document.getElementById('sw-buy-price').value) || 0;
+
+  const sellAmt = Math.round(sellPrice * sellShares * 1000);
+  const buyAmt  = Math.round(buyPrice * buyShares * 1000);
+  const diff    = sellAmt - buyAmt;
+
+  const sellCode = document.getElementById('sw-sell-code').value.trim().toUpperCase();
+  const entry = D.portfolio.find(s => s.code === sellCode);
+  const costPrice = entry ? entry.cost : 0;
+  const pnl = Math.round((sellPrice - costPrice) * sellShares * 1000);
+
+  const el = document.getElementById('sw-summary');
+  if (sellAmt > 0 || buyAmt > 0) {
+    el.innerHTML = `
+      賣出金額：<strong>NT$${fmtN(sellAmt)}</strong>
+      買入金額：<strong>NT$${fmtN(buyAmt)}</strong><br>
+      ${costPrice > 0 ? `已實現損益：<strong class="${cls(pnl)}">${fmtPnl(pnl)}</strong>（成本 $${fmtN(costPrice,2)}）<br>` : ''}
+      現金變動：<strong class="${cls(diff)}">${diff >= 0 ? '+' : ''}NT$${fmtN(diff)}</strong>
+    `;
+  } else {
+    el.textContent = '填入資料後自動試算';
+  }
+}
+
+function executeSwap() {
+  const date      = document.getElementById('sw-date').value;
+  const sellCode  = document.getElementById('sw-sell-code').value.trim().toUpperCase();
+  const sellShares= parseFloat(document.getElementById('sw-sell-shares').value);
+  const sellPrice = parseFloat(document.getElementById('sw-sell-price').value);
+  const buyCode   = document.getElementById('sw-buy-code').value.trim().toUpperCase();
+  const buyShares = parseFloat(document.getElementById('sw-buy-shares').value);
+  const buyPrice  = parseFloat(document.getElementById('sw-buy-price').value);
+  const note      = document.getElementById('sw-note').value.trim();
+
+  if (!date || !sellCode || isNaN(sellShares) || isNaN(sellPrice)) {
+    alert('請填寫日期、賣出股票、張數、賣出價');
+    return;
+  }
+  if (!buyCode || isNaN(buyShares) || isNaN(buyPrice)) {
+    alert('請填寫買入股票、張數、買入價');
+    return;
+  }
+
+  const sellAmt = Math.round(sellPrice * sellShares * 1000);
+  const buyAmt  = Math.round(buyPrice * buyShares * 1000);
+
+  // 1. 找賣出股票的成本，計算已實現損益
+  const sellEntry = D.portfolio.find(s => s.code === sellCode);
+  const costPrice = sellEntry ? sellEntry.cost : 0;
+  const pnl = Math.round((sellPrice - costPrice) * sellShares * 1000);
+
+  // 2. 從持股中扣減賣出張數
+  if (sellEntry) {
+    sellEntry.shares = Math.round((sellEntry.shares - sellShares) * 100) / 100;
+    if (sellEntry.shares <= 0) {
+      D.portfolio = D.portfolio.filter(s => s.id !== sellEntry.id);
+    }
+  }
+
+  // 3. 新增買入持股（合併同代號或新增）
+  const existing = D.portfolio.find(s => s.code === buyCode);
+  if (existing) {
+    // 加權平均成本
+    const oldTotal = existing.cost * existing.shares * 1000;
+    existing.shares = Math.round((existing.shares + buyShares) * 100) / 100;
+    existing.cost = Math.round((oldTotal + buyAmt) / (existing.shares * 1000) * 100) / 100;
+  } else {
+    D.portfolio.push({
+      id: String(D.nextId++), code: buyCode, shares: buyShares,
+      cost: buyPrice, note: note || `換股自 ${sellCode}`, sector: '',
+      price: null, prev: null, updatedAt: null
+    });
+  }
+
+  // 4. 記錄交易紀錄
+  D.trades = D.trades || [];
+  D.trades.push({
+    id: String(D.nextTradeId++),
+    date, code: sellCode, action: '換股', shares: sellShares,
+    sellPrice, costPrice, pnl,
+    targetCode: buyCode,
+    note: note || `→ ${buyCode} ${buyShares}張 @ $${buyPrice}`,
+  });
+
+  // 5. 現金變動 = 賣出 - 買入
+  D.cashBalance = (D.cashBalance || 0) + sellAmt - buyAmt;
+
+  // 6. 活動紀錄
+  logActivity('換股', `${sellCode} ${sellShares}張 @ $${sellPrice} → ${buyCode} ${buyShares}張 @ $${buyPrice} 損益${fmtPnl(pnl)}`);
+
+  saveData(currentProfile, D);
+  document.getElementById('swap-modal').style.display = 'none';
+  render();
+}
+
 // ── Performance ──────────────────────────────────────────────────────────────
 function calcPerformance() {
   const flows = D.capitalFlows || [];
@@ -2088,12 +2281,13 @@ function calcPerformance() {
   const totalDiv = (D.dividends || []).reduce((a, d) => a + d.amount, 0);
   const realizedPnl = (D.trades || []).reduce((a, t) => a + (t.pnl || 0), 0);
 
-  // 績效 = (目前市值 + 已提領) - 累計投入
-  // 含息績效 = 績效 + 配息（配息若已再投資則已含在市值中，不重複計）
-  const returnAmt = mkt + totalOut - totalIn;
+  const cash = D.cashBalance || 0;
+
+  // 績效 = (持股市值 + 帳戶現金 + 已提領) - 累計投入
+  const returnAmt = mkt + cash + totalOut - totalIn;
   const returnPct = totalIn > 0 ? returnAmt / totalIn * 100 : null;
 
-  return { totalIn, totalOut, netInvested, mkt, totalDiv, realizedPnl, returnAmt, returnPct };
+  return { totalIn, totalOut, netInvested, mkt, cash, totalDiv, realizedPnl, returnAmt, returnPct };
 }
 
 function renderPerformance() {
@@ -2127,6 +2321,8 @@ function renderPerformance() {
       <div class="perf-card"><div class="lbl">💸 累計提領</div><div class="val">${p.totalOut ? fmtNT(p.totalOut) : 'NT$0'}</div></div>
       <div class="perf-card"><div class="lbl">📊 淨投入資金</div><div class="val">${p.netInvested ? fmtNT(p.netInvested) : '—'}</div></div>
       <div class="perf-card"><div class="lbl">📈 持股市值</div><div class="val">${p.mkt ? fmtNT(p.mkt) : '—'}</div></div>
+      <div class="perf-card"><div class="lbl">💵 帳戶現金</div><div class="val">${p.cash ? 'NT$' + fmtN(p.cash) : 'NT$0'}</div></div>
+      <div class="perf-card"><div class="lbl">🏦 帳戶總值</div><div class="val">${(p.mkt || p.cash) ? fmtNT(p.mkt + p.cash) : '—'}</div></div>
       <div class="perf-card highlight"><div class="lbl">🎯 帳戶報酬</div>
         <div class="val ${cls(p.returnAmt)}">${p.totalIn ? fmtPnl(p.returnAmt) : '—'}</div>
         <div class="sub ${cls(p.returnAmt)}">${p.returnPct != null ? sign(p.returnPct) + fmtN(p.returnPct, 2) + '%' : ''}</div>
@@ -2164,8 +2360,11 @@ function addCapitalFlow() {
   const note   = document.getElementById('fl-note').value.trim();
   if (!date || isNaN(amount) || amount <= 0) { alert('請填寫日期和金額'); return; }
   D.capitalFlows = D.capitalFlows || [];
-  D.capitalFlows.push({ id: String(D.nextFlowId++), date, type, amount: Math.round(amount), note });
-  logActivity(type === 'in' ? '資金投入' : '資金提領', `NT$${fmtN(Math.round(amount))} ${note}`);
+  const roundedAmt = Math.round(amount);
+  D.capitalFlows.push({ id: String(D.nextFlowId++), date, type, amount: roundedAmt, note });
+  // 投入 → 現金增加；提領 → 現金減少
+  D.cashBalance = (D.cashBalance || 0) + (type === 'in' ? roundedAmt : -roundedAmt);
+  logActivity(type === 'in' ? '資金投入' : '資金提領', `NT$${fmtN(roundedAmt)} ${note}`);
   saveData(currentProfile, D);
   document.getElementById('fl-amount').value = '';
   document.getElementById('fl-note').value   = '';
@@ -2176,7 +2375,11 @@ function delCapitalFlow(id) {
   if (!confirm('確定刪除此筆資金紀錄？')) return;
   const del = (D.capitalFlows || []).find(f => f.id === id);
   D.capitalFlows = (D.capitalFlows || []).filter(f => f.id !== id);
-  if (del) logActivity('刪除資金紀錄', `${del.type === 'in' ? '投入' : '提領'} NT$${fmtN(del.amount)}`);
+  if (del) {
+    // 反向調整現金
+    D.cashBalance = (D.cashBalance || 0) + (del.type === 'in' ? -del.amount : del.amount);
+    logActivity('刪除資金紀錄', `${del.type === 'in' ? '投入' : '提領'} NT$${fmtN(del.amount)}`);
+  }
   saveData(currentProfile, D);
   renderPerformance();
 }
