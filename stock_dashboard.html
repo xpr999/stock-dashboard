@@ -456,8 +456,8 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
       </div>
       <div class="chart-grid" style="padding-top:0">
         <div class="chart-box" style="grid-column:1/-1">
-          <h3>📈 資產增長曲線</h3>
-          <div class="chart-subtitle">每次更新報價自動記錄，追蹤總市值與投入成本變化</div>
+          <h3>📈 帳戶總值曲線</h3>
+          <div class="chart-subtitle">帳戶總值（市值＋現金）vs 淨投入，間距＝總報酬</div>
           <div class="chart-wrap" style="height:260px"><canvas id="growthChart"></canvas></div>
         </div>
       </div>
@@ -569,6 +569,13 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <div id="perf-init-box"></div>
     <div class="perf-summary">
       <div class="perf-cards" id="perf-cards"></div>
+    </div>
+    <div class="chart-grid" style="padding:0 16px 16px">
+      <div class="chart-box" style="grid-column:1/-1">
+        <h3>📈 績效曲線</h3>
+        <div class="chart-subtitle">帳戶總值（市值＋現金）vs 淨投入，間距＝總報酬</div>
+        <div class="chart-wrap" style="height:280px"><canvas id="perfChart"></canvas></div>
+      </div>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -1312,30 +1319,25 @@ function renderCharts() {
 
 // ── Growth Chart ───────────────────────────────────────────────────────────────
 let growthChartInst = null;
-function renderGrowthChart() {
-  const ctx = document.getElementById('growthChart');
-  if (!ctx) return;
-  if (growthChartInst) { growthChartInst.destroy(); growthChartInst = null; }
-  const snaps = [...D.snapshots].sort((a,b) => a.date.localeCompare(b.date));
-  if (snaps.length < 1) {
-    ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--muted);padding:60px 0;font-size:13px">更新報價後自動記錄，累積資料後顯示曲線</p>';
-    return;
-  }
-  growthChartInst = new Chart(ctx, {
+let perfChartInst = null;
+
+function _buildGrowthChart(ctx, snaps) {
+  const pts = snaps.length;
+  return new Chart(ctx, {
     type: 'line',
     data: {
       labels: snaps.map(p => p.date),
       datasets: [
         {
-          label: '總市值',
+          label: '帳戶總值',
           data: snaps.map(p => p.value),
           borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.08)',
-          borderWidth: 2, pointRadius: snaps.length > 30 ? 0 : 4,
+          borderWidth: 2, pointRadius: pts > 30 ? 0 : 4,
           fill: true, tension: 0.3,
         },
         {
-          label: '投入成本',
-          data: snaps.map(p => p.cost),
+          label: '淨投入',
+          data: snaps.map(p => p.netInvested || p.cost),
           borderColor: '#9ca3af', backgroundColor: 'transparent',
           borderWidth: 2, borderDash: [5,4], pointRadius: 0, tension: 0.3,
         }
@@ -1362,12 +1364,12 @@ function renderGrowthChart() {
               return ` ${ctx.dataset.label}：NT$${v.toLocaleString('zh-TW',{maximumFractionDigits:0})}`;
             },
             afterBody: items => {
-              const val  = items.find(i => i.dataset.label === '總市值')?.raw;
-              const cost = items.find(i => i.dataset.label === '投入成本')?.raw;
-              if (val != null && cost != null) {
-                const diff = val - cost;
-                const pct  = (diff / cost * 100).toFixed(1);
-                return [`損益：${diff >= 0 ? '+' : ''}NT$${diff.toLocaleString('zh-TW',{maximumFractionDigits:0})} (${pct}%)`];
+              const total = items.find(i => i.dataset.label === '帳戶總值')?.raw;
+              const invested = items.find(i => i.dataset.label === '淨投入')?.raw;
+              if (total != null && invested != null && invested > 0) {
+                const ret = total - invested;
+                const pct = (ret / invested * 100).toFixed(1);
+                return [`總報酬：${ret >= 0 ? '+' : ''}NT$${ret.toLocaleString('zh-TW',{maximumFractionDigits:0})} (${pct}%)`];
               }
             }
           }
@@ -1375,6 +1377,30 @@ function renderGrowthChart() {
       }
     }
   });
+}
+
+function renderPerfChart() {
+  const ctx = document.getElementById('perfChart');
+  if (!ctx) return;
+  if (perfChartInst) { perfChartInst.destroy(); perfChartInst = null; }
+  const snaps = [...D.snapshots].sort((a,b) => a.date.localeCompare(b.date));
+  if (snaps.length < 1) {
+    ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--muted);padding:60px 0;font-size:13px">更新報價後自動記錄，累積資料後顯示曲線</p>';
+    return;
+  }
+  perfChartInst = _buildGrowthChart(ctx, snaps);
+}
+
+function renderGrowthChart() {
+  const ctx = document.getElementById('growthChart');
+  if (!ctx) return;
+  if (growthChartInst) { growthChartInst.destroy(); growthChartInst = null; }
+  const snaps = [...D.snapshots].sort((a,b) => a.date.localeCompare(b.date));
+  if (snaps.length < 1) {
+    ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--muted);padding:60px 0;font-size:13px">更新報價後自動記錄，累積資料後顯示曲線</p>';
+    return;
+  }
+  growthChartInst = _buildGrowthChart(ctx, snaps);
 }
 
 // ── P&L Bar Chart ──────────────────────────────────────────────────────────────
@@ -2291,6 +2317,7 @@ function calcPerformance() {
 }
 
 function renderPerformance() {
+  renderPerfChart();
   const flows = D.capitalFlows || [];
   const hasFlows = flows.length > 0;
   const initBox = document.getElementById('perf-init-box');
