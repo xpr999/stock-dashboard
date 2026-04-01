@@ -188,6 +188,19 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
 .overview-table .ov-total td { background: #edf2fb; font-weight: 700; border-top: 2px solid var(--primary); }
 .ov-member { display: flex; align-items: center; gap: 6px; }
 .ov-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+/* ── Performance ── */
+.perf-summary { padding: 16px 20px; }
+.perf-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.perf-card { background: #f8fafc; border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); text-align: center; }
+.perf-card .lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.perf-card .val { font-size: 18px; font-weight: 700; }
+.perf-card .sub { font-size: 12px; margin-top: 3px; }
+.perf-card.highlight { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-color: #93c5fd; }
+.perf-init { background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius); padding: 14px 18px; margin: 0 20px 16px; }
+.perf-init p { font-size: 13px; color: #92400e; margin-bottom: 10px; }
+.flow-badge { display: inline-block; border-radius: 4px; font-size: 11px; padding: 2px 7px; font-weight: 600; }
+.badge-in  { background: #dcfce7; color: #166534; }
+.badge-out { background: #fee2e2; color: #b91c1c; }
 /* ── Responsive ── */
 @media (max-width: 700px) {
   .chart-grid { grid-template-columns: 1fr; }
@@ -248,6 +261,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <button class="tbtn"        onclick="showTab('chart',this)">📊 持股分析</button>
     <button class="tbtn"        onclick="showTab('target',this)">🎯 0050目標</button>
     <button class="tbtn"        onclick="showTab('members',this)">👥 成員總覽</button>
+    <button class="tbtn"        onclick="showTab('performance',this)">💰 績效追蹤</button>
   </div>
 
   <!-- ── 持股明細 ── -->
@@ -290,6 +304,13 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
             <option value="生技醫療">生技醫療</option>
             <option value="營建">營建</option>
             <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>資金來源</label>
+          <select id="f-source" class="short" style="width:110px">
+            <option value="new">新資金投入</option>
+            <option value="internal">帳內資金（換股/再投資）</option>
           </select>
         </div>
         <div class="fg"><label>備註（選填）</label><input id="f-note" placeholder="如 第一批"></div>
@@ -383,6 +404,13 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
         <div class="fg"><label>賣出價格（每股）</label><input id="tr-sell" type="number" min="0.01" step="0.01" class="short" placeholder="—"></div>
         <div class="fg"><label>成本價（每股）</label><input id="tr-cost" type="number" min="0.01" step="0.01" class="short" placeholder="自動帶入"></div>
         <div class="fg" id="tr-target-wrap" style="display:none"><label>換入股票</label><input id="tr-target" placeholder="如 0050" class="short"></div>
+        <div class="fg" id="tr-dest-wrap">
+          <label>賣出資金</label>
+          <select id="tr-dest" class="short" style="width:110px">
+            <option value="keep">留在帳內（再投資）</option>
+            <option value="withdraw">提領出金</option>
+          </select>
+        </div>
         <div class="fg"><label>備註（選填）</label><input id="tr-note" placeholder="換股原因等"></div>
         <button class="badd" onclick="addTrade()">新增</button>
       </div>
@@ -523,6 +551,41 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     </div>
   </div>
 
+  <!-- ── 績效追蹤 ── -->
+  <div class="panel" id="tab-performance" style="display:none">
+    <div id="perf-init-box"></div>
+    <div class="perf-summary">
+      <div class="perf-cards" id="perf-cards"></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>日期</th><th>類型</th><th>金額</th><th>備註</th><th></th>
+        </tr></thead>
+        <tbody id="flow-body"></tbody>
+      </table>
+    </div>
+    <div class="form-wrap">
+      <h3>➕ 新增資金異動</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        記錄從外部投入或提領的金額。帳戶內的換股、再投資不需記錄。
+      </p>
+      <div class="fgrid">
+        <div class="fg"><label>日期</label><input id="fl-date" type="date" class="short"></div>
+        <div class="fg">
+          <label>類型</label>
+          <select id="fl-type" class="short">
+            <option value="in">投入（新資金）</option>
+            <option value="out">提領（出金）</option>
+          </select>
+        </div>
+        <div class="fg"><label>金額（元）</label><input id="fl-amount" type="number" min="1" step="1" placeholder="如 500000"></div>
+        <div class="fg"><label>備註（選填）</label><input id="fl-note" placeholder="如 定期投入"></div>
+        <button class="badd" onclick="addCapitalFlow()">新增</button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- ── Sharing Modal ── -->
@@ -586,11 +649,13 @@ function loadData(name) {
     trades:       d.trades       ?? [],
     creditLoans:  d.creditLoans  ?? [],
     snapshots:    d.snapshots    ?? [],
+    capitalFlows: d.capitalFlows ?? [],
     nextId:       d.nextId       ?? 0,
     nextPid:      d.nextPid      ?? 0,
     nextDivId:    d.nextDivId    ?? 0,
     nextTradeId:  d.nextTradeId  ?? 0,
     nextCreditId: d.nextCreditId ?? 0,
+    nextFlowId:   d.nextFlowId   ?? 0,
   };
 }
 function saveData(name, d) { localStorage.setItem(dataKey(name), JSON.stringify(d)); }
@@ -717,13 +782,14 @@ function delProfile() {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function showTab(name, btn) {
-  ['portfolio','dividend','pledge','credit','trades','chart','target','members'].forEach(t =>
+  ['portfolio','dividend','pledge','credit','trades','chart','target','members','performance'].forEach(t =>
     document.getElementById('tab-'+t).style.display = t===name ? '' : 'none');
   document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (name === 'chart')   renderCharts();
-  if (name === 'target')  renderTarget();
-  if (name === 'members') renderMembersOverview();
+  if (name === 'chart')       renderCharts();
+  if (name === 'target')      renderTarget();
+  if (name === 'members')     renderMembersOverview();
+  if (name === 'performance') renderPerformance();
 }
 
 // ── Formatting ────────────────────────────────────────────────────────────────
@@ -785,9 +851,10 @@ function render() {
   renderPledge();
   renderCredits();
   renderTrades();
-  if (document.getElementById('tab-chart').style.display   !== 'none') renderCharts();
-  if (document.getElementById('tab-target').style.display  !== 'none') renderTarget();
-  if (document.getElementById('tab-members').style.display !== 'none') renderMembersOverview();
+  if (document.getElementById('tab-chart').style.display       !== 'none') renderCharts();
+  if (document.getElementById('tab-target').style.display      !== 'none') renderTarget();
+  if (document.getElementById('tab-members').style.display     !== 'none') renderMembersOverview();
+  if (document.getElementById('tab-performance').style.display !== 'none') renderPerformance();
 }
 
 function renderSummary() {
@@ -965,8 +1032,11 @@ function saveSnapshot() {
   if (totalVal === 0) return;
   const today = new Date().toISOString().slice(0, 10);
   // 同一天只保留最新一筆
+  const flows = D.capitalFlows || [];
+  const totalIn  = flows.filter(f => f.type === 'in').reduce((a, f) => a + f.amount, 0);
+  const totalOutF = flows.filter(f => f.type === 'out').reduce((a, f) => a + f.amount, 0);
   D.snapshots = D.snapshots.filter(p => p.date !== today);
-  D.snapshots.push({ date: today, value: Math.round(totalVal), cost: Math.round(totalCost) });
+  D.snapshots.push({ date: today, value: Math.round(totalVal), cost: Math.round(totalCost), netInvested: totalIn - totalOutF });
   // 最多保留 365 筆
   if (D.snapshots.length > 365) D.snapshots = D.snapshots.slice(-365);
 }
@@ -1314,13 +1384,24 @@ function addStock() {
   const shares = parseFloat(document.getElementById('f-shares').value);
   const cost   = parseFloat(document.getElementById('f-cost').value);
   const sector = document.getElementById('f-sector').value;
+  const source = document.getElementById('f-source').value;
   const note   = document.getElementById('f-note').value.trim();
   if (!code || isNaN(shares) || isNaN(cost)) { alert('請填寫代號、張數、成本價'); return; }
   D.portfolio.push({ id: String(D.nextId++), code, shares, cost, note, sector, price: null, prev: null, updatedAt: null });
+  // 新資金投入 → 自動建立資金流入紀錄
+  if (source === 'new') {
+    const amount = Math.round(cost * shares * 1000);
+    D.capitalFlows = D.capitalFlows || [];
+    D.capitalFlows.push({
+      id: String(D.nextFlowId++), date: new Date().toISOString().slice(0,10),
+      type: 'in', amount, note: `買入 ${code} ${shares}張`
+    });
+  }
   saveData(currentProfile, D);
   document.getElementById('f-code').value   = '';
   document.getElementById('f-note').value   = '';
   document.getElementById('f-sector').value = '';
+  document.getElementById('f-source').value = 'new';
   render();
 }
 function delStock(id) {
@@ -1486,6 +1567,7 @@ function autoFillCost() {
 function onTradeActionChange() {
   const action = document.getElementById('tr-action').value;
   document.getElementById('tr-target-wrap').style.display = action === '換股' ? '' : 'none';
+  document.getElementById('tr-dest-wrap').style.display   = action === '換股' ? 'none' : '';
 }
 
 function addTrade() {
@@ -1511,6 +1593,7 @@ function addTrade() {
   }
 
   const pnl = (sellPrice - costPrice) * shares * 1000;
+  const dest = document.getElementById('tr-dest').value;
 
   D.trades = D.trades || [];
   D.trades.push({
@@ -1519,6 +1602,15 @@ function addTrade() {
     targetCode: targetCode || null,
     note,
   });
+  // 賣出 + 提領 → 自動建立資金流出紀錄
+  if (action === '賣出' && dest === 'withdraw') {
+    const outAmount = Math.round(sellPrice * shares * 1000);
+    D.capitalFlows = D.capitalFlows || [];
+    D.capitalFlows.push({
+      id: String(D.nextFlowId++), date,
+      type: 'out', amount: outAmount, note: `賣出 ${code} ${shares}張 提領`
+    });
+  }
   saveData(currentProfile, D);
 
   // 清空表單
@@ -1527,6 +1619,7 @@ function addTrade() {
   document.getElementById('tr-sell').value   = '';
   document.getElementById('tr-cost').value   = '';
   document.getElementById('tr-target').value = '';
+  document.getElementById('tr-dest').value   = 'keep';
   document.getElementById('tr-note').value   = '';
 
   renderTrades();
@@ -1751,11 +1844,14 @@ function importData(evt) {
         dividends:    imp.dividends    ?? [],
         trades:       imp.trades       ?? [],
         creditLoans:  imp.creditLoans  ?? [],
+        capitalFlows: imp.capitalFlows ?? [],
+        snapshots:    imp.snapshots    ?? [],
         nextId:       imp.nextId       ?? imp.portfolio.length,
         nextPid:      imp.nextPid      ?? 0,
         nextDivId:    imp.nextDivId    ?? 0,
         nextTradeId:  imp.nextTradeId  ?? 0,
         nextCreditId: imp.nextCreditId ?? 0,
+        nextFlowId:   imp.nextFlowId   ?? 0,
       };
       saveData(currentProfile, D);
       render();
@@ -1869,6 +1965,126 @@ function calcTargetCustom() {
     <div class="cr-item"><div class="cr-lbl">損益金額</div><div class="cr-val ${cls(profit)}">${fmtPnl(profit)}</div></div>
     <div class="cr-item"><div class="cr-lbl">損益比例</div><div class="cr-val ${cls(profit)}">${sign(pct)}${fmtN(pct,2)}%</div></div>
   </div>`;
+}
+
+// ── Performance ──────────────────────────────────────────────────────────────
+function calcPerformance() {
+  const flows = D.capitalFlows || [];
+  const totalIn  = flows.filter(f => f.type === 'in').reduce((a, f) => a + f.amount, 0);
+  const totalOut = flows.filter(f => f.type === 'out').reduce((a, f) => a + f.amount, 0);
+  const netInvested = totalIn - totalOut;
+
+  let mkt = 0;
+  for (const s of D.portfolio) {
+    const p = s.price ?? s.cost;
+    mkt += p * s.shares * 1000;
+  }
+
+  const totalDiv = (D.dividends || []).reduce((a, d) => a + d.amount, 0);
+  const realizedPnl = (D.trades || []).reduce((a, t) => a + (t.pnl || 0), 0);
+
+  // 績效 = (目前市值 + 已提領) - 累計投入
+  // 含息績效 = 績效 + 配息（配息若已再投資則已含在市值中，不重複計）
+  const returnAmt = mkt + totalOut - totalIn;
+  const returnPct = totalIn > 0 ? returnAmt / totalIn * 100 : null;
+
+  return { totalIn, totalOut, netInvested, mkt, totalDiv, realizedPnl, returnAmt, returnPct };
+}
+
+function renderPerformance() {
+  const flows = D.capitalFlows || [];
+  const hasFlows = flows.length > 0;
+  const initBox = document.getElementById('perf-init-box');
+
+  // 尚無資金紀錄 → 提示初始化
+  if (!hasFlows && D.portfolio.length > 0) {
+    const holdingCost = D.portfolio.reduce((a, s) => a + s.cost * s.shares * 1000, 0);
+    const realizedPnl = (D.trades || []).reduce((a, t) => a + (t.pnl || 0), 0);
+    const estimated = Math.round(holdingCost - realizedPnl);
+    initBox.innerHTML = `<div class="perf-init">
+      <p>⚠️ 尚無資金異動紀錄。系統根據現有持股成本與已實現損益，估算你的<strong>累計投入約 NT$${fmtN(estimated)}</strong>。</p>
+      <p style="font-size:12px;color:#78716c">此估算假設所有賣出收益都已再投資、無提領出金。如不準確可在下方手動調整。</p>
+      <button class="badd" onclick="initCapitalFlow(${estimated})">✅ 用此金額初始化</button>
+    </div>`;
+  } else {
+    initBox.innerHTML = '';
+  }
+
+  // 績效卡片
+  const p = calcPerformance();
+  const cards = document.getElementById('perf-cards');
+
+  if (!hasFlows && !D.portfolio.length) {
+    cards.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center">新增持股並記錄資金投入後，這裡會顯示績效數據</div>';
+  } else {
+    cards.innerHTML = `
+      <div class="perf-card"><div class="lbl">💰 累計投入</div><div class="val">${p.totalIn ? fmtNT(p.totalIn) : '—'}</div></div>
+      <div class="perf-card"><div class="lbl">💸 累計提領</div><div class="val">${p.totalOut ? fmtNT(p.totalOut) : 'NT$0'}</div></div>
+      <div class="perf-card"><div class="lbl">📊 淨投入資金</div><div class="val">${p.netInvested ? fmtNT(p.netInvested) : '—'}</div></div>
+      <div class="perf-card"><div class="lbl">📈 持股市值</div><div class="val">${p.mkt ? fmtNT(p.mkt) : '—'}</div></div>
+      <div class="perf-card highlight"><div class="lbl">🎯 帳戶報酬</div>
+        <div class="val ${cls(p.returnAmt)}">${p.totalIn ? fmtPnl(p.returnAmt) : '—'}</div>
+        <div class="sub ${cls(p.returnAmt)}">${p.returnPct != null ? sign(p.returnPct) + fmtN(p.returnPct, 2) + '%' : ''}</div>
+      </div>
+      <div class="perf-card"><div class="lbl">💹 已實現損益</div><div class="val ${cls(p.realizedPnl)}">${fmtPnl(p.realizedPnl)}</div></div>
+      <div class="perf-card"><div class="lbl">💵 累計配息</div><div class="val" style="color:#7c3aed">${p.totalDiv ? '+NT$' + fmtN(p.totalDiv) : 'NT$0'}</div></div>
+    `;
+  }
+
+  // 資金異動明細
+  const tb = document.getElementById('flow-body');
+  if (!flows.length) {
+    tb.innerHTML = '<tr><td colspan="5" class="empty">尚無資金異動紀錄。新增持股時選「新資金投入」會自動記錄，也可在下方手動新增。</td></tr>';
+    return;
+  }
+  const sorted = [...flows].sort((a, b) => b.date.localeCompare(a.date));
+  tb.innerHTML = sorted.map(f => {
+    const badge = f.type === 'in'
+      ? '<span class="flow-badge badge-in">投入</span>'
+      : '<span class="flow-badge badge-out">提領</span>';
+    return `<tr>
+      <td>${esc(f.date)}</td>
+      <td>${badge}</td>
+      <td>${f.type === 'in' ? '+' : '-'}NT$${fmtN(f.amount)}</td>
+      <td>${esc(f.note || '')}</td>
+      <td><button class="bdel" onclick="delCapitalFlow('${f.id}')">刪除</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function addCapitalFlow() {
+  const date   = document.getElementById('fl-date').value;
+  const type   = document.getElementById('fl-type').value;
+  const amount = parseFloat(document.getElementById('fl-amount').value);
+  const note   = document.getElementById('fl-note').value.trim();
+  if (!date || isNaN(amount) || amount <= 0) { alert('請填寫日期和金額'); return; }
+  D.capitalFlows = D.capitalFlows || [];
+  D.capitalFlows.push({ id: String(D.nextFlowId++), date, type, amount: Math.round(amount), note });
+  saveData(currentProfile, D);
+  document.getElementById('fl-amount').value = '';
+  document.getElementById('fl-note').value   = '';
+  renderPerformance();
+}
+
+function delCapitalFlow(id) {
+  if (!confirm('確定刪除此筆資金紀錄？')) return;
+  D.capitalFlows = (D.capitalFlows || []).filter(f => f.id !== id);
+  saveData(currentProfile, D);
+  renderPerformance();
+}
+
+function initCapitalFlow(amount) {
+  D.capitalFlows = D.capitalFlows || [];
+  // 用最早的快照日期或今天
+  const earliest = D.snapshots?.length
+    ? [...D.snapshots].sort((a, b) => a.date.localeCompare(b.date))[0].date
+    : new Date().toISOString().slice(0, 10);
+  D.capitalFlows.push({
+    id: String(D.nextFlowId++), date: earliest,
+    type: 'in', amount, note: '初始投入（系統估算）'
+  });
+  saveData(currentProfile, D);
+  renderPerformance();
 }
 
 // ── Firebase ──────────────────────────────────────────────────────────────────
@@ -2050,6 +2266,7 @@ auth.onAuthStateChanged(async user => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('d-date').value  = new Date().toISOString().slice(0,7);
 document.getElementById('tr-date').value = new Date().toISOString().slice(0,10);
+document.getElementById('fl-date').value = new Date().toISOString().slice(0,10);
 </script>
 </body>
 </html>
