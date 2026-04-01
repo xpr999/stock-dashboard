@@ -272,7 +272,6 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <div class="card"><div class="lbl">💹 已實現損益</div><div class="val" id="c-realized">NT$0</div></div>
     <div class="card"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
     <div class="card"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
-    <div class="card"><div class="lbl">💵 帳戶現金</div><div class="val" id="c-cash">NT$0</div></div>
     <div class="card"><div class="lbl">🏦 淨資產</div><div class="val" id="c-net">—</div></div>
     <div class="card"><div class="lbl">🎯 台股曝險</div><div class="val" id="c-exposure">—</div></div>
   </div>
@@ -950,12 +949,9 @@ function renderSummary() {
   re.textContent = fmtPnl(realizedPnl);
   re.className = 'val ' + cls(realizedPnl);
 
-  const cash = D.cashBalance || 0;
-  document.getElementById('c-cash').textContent = 'NT$' + fmtN(cash);
-
   document.getElementById('c-loan').textContent   = 'NT$' + fmtN(loan);
   document.getElementById('c-credit').textContent = 'NT$' + fmtN(credit);
-  const netVal = (mkt || 0) + cash - totalDebt;
+  const netVal = (mkt || 0) - totalDebt;
   const ne = document.getElementById('c-net');
   ne.textContent = (mkt || cash) ? fmtNT(netVal) : '—';
   ne.className = 'val ' + cls(netVal);
@@ -2209,8 +2205,6 @@ function renderPerformance() {
   document.getElementById('perf-init-box').innerHTML = '';
 
   const { mkt, cost, pnl, totalDiv, realizedPnl, totalReturn } = calcSummary();
-  const cash = D.cashBalance || 0;
-  const totalVal = mkt + cash;
   const totalPct = cost ? totalReturn / cost * 100 : null;
 
   const cards = document.getElementById('perf-cards');
@@ -2220,8 +2214,6 @@ function renderPerformance() {
     cards.innerHTML = `
       <div class="perf-card"><div class="lbl">📊 投入成本</div><div class="val">${cost ? fmtNT(cost) : '—'}</div></div>
       <div class="perf-card"><div class="lbl">📈 持股市值</div><div class="val">${mkt ? fmtNT(mkt) : '—'}</div></div>
-      <div class="perf-card"><div class="lbl">💵 帳戶現金</div><div class="val">NT$${fmtN(cash)}</div></div>
-      <div class="perf-card"><div class="lbl">🏦 帳戶總值</div><div class="val">${totalVal ? fmtNT(totalVal) : '—'}</div></div>
       <div class="perf-card"><div class="lbl">📈 未實現損益</div>
         <div class="val ${cls(pnl)}">${mkt ? fmtPnl(pnl) : '—'}</div></div>
       <div class="perf-card"><div class="lbl">💹 已實現損益</div>
