@@ -283,7 +283,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <button class="tbtn"        onclick="showTab('dividend',this)">💵 配息記錄</button>
     <button class="tbtn"        onclick="showTab('pledge',this)">🔒 質押總覽</button>
     <button class="tbtn"        onclick="showTab('credit',this)">💳 信貸</button>
-    <button class="tbtn"        onclick="showTab('trades',this)">📒 交易紀錄</button>
+    <button class="tbtn"        onclick="showTab('trades',this)">🔄 換股紀錄</button>
     <button class="tbtn"        onclick="showTab('chart',this)">📊 持股分析</button>
     <button class="tbtn"        onclick="showTab('target',this)">🎯 0050目標</button>
     <button class="tbtn"        onclick="showTab('members',this)">👥 成員總覽</button>
@@ -383,50 +383,23 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     </div>
   </div>
 
-  <!-- ── 交易紀錄 ── -->
+  <!-- ── 換股紀錄 ── -->
   <div class="panel" id="tab-trades" style="display:none">
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>日期</th><th>股票</th><th>操作</th>
+          <th>日期</th><th>賣出</th><th>操作</th>
           <th>張數</th><th>賣出價</th><th>成本價</th>
           <th>已實現損益</th><th>備註</th><th></th>
         </tr></thead>
         <tbody id="trade-body"></tbody>
       </table>
     </div>
-    <div class="form-wrap">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h3>➕ 新增賣出／換股紀錄</h3>
-        <button class="badd" onclick="openSwapWizard()" style="background:#6366f1;font-size:12px;padding:5px 14px">🔄 換股精靈</button>
-      </div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
-        手動記錄單筆交易，或用「換股精靈」一鍵完成賣出＋買入。
+    <div class="form-wrap" style="text-align:center;padding:20px">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+        賣出 A 買入 B，一鍵完成持股異動＋損益計算＋現金追蹤
       </p>
-      <div class="fgrid">
-        <div class="fg"><label>日期</label><input id="tr-date" type="date" class="short"></div>
-        <div class="fg">
-          <label>操作</label>
-          <select id="tr-action" class="short" onchange="onTradeActionChange()">
-            <option value="賣出">賣出</option>
-            <option value="換股">換股</option>
-          </select>
-        </div>
-        <div class="fg"><label>賣出股票</label><input id="tr-code" placeholder="如 2330" class="short" oninput="autoFillCost()"></div>
-        <div class="fg"><label>張數</label><input id="tr-shares" type="number" value="1" min="0.01" step="0.01" class="short"></div>
-        <div class="fg"><label>賣出價格（每股）</label><input id="tr-sell" type="number" min="0.01" step="0.01" class="short" placeholder="—"></div>
-        <div class="fg"><label>成本價（每股）</label><input id="tr-cost" type="number" min="0.01" step="0.01" class="short" placeholder="自動帶入"></div>
-        <div class="fg" id="tr-target-wrap" style="display:none"><label>換入股票</label><input id="tr-target" placeholder="如 0050" class="short"></div>
-        <div class="fg" id="tr-dest-wrap">
-          <label>賣出資金</label>
-          <select id="tr-dest" class="short" style="width:110px">
-            <option value="keep">留在帳內（再投資）</option>
-            <option value="withdraw">提領出金</option>
-          </select>
-        </div>
-        <div class="fg"><label>備註（選填）</label><input id="tr-note" placeholder="換股原因等"></div>
-        <button class="badd" onclick="addTrade()">新增</button>
-      </div>
+      <button class="badd" onclick="openSwapWizard()" style="background:#6366f1;font-size:15px;padding:10px 32px">🔄 新增換股紀錄</button>
     </div>
   </div>
 
@@ -1130,7 +1103,7 @@ function renderPledge() {
 function renderTrades() {
   const tb = document.getElementById('trade-body');
   if (!D.trades || !D.trades.length) {
-    tb.innerHTML = '<tr><td colspan="9" class="empty">尚無交易紀錄。賣出或換股後請在下方新增，以追蹤已實現損益</td></tr>';
+    tb.innerHTML = '<tr><td colspan="9" class="empty">尚無換股紀錄。點下方按鈕記錄換股操作</td></tr>';
     return;
   }
   const sorted = [...D.trades].sort((a,b) => b.date.localeCompare(a.date));
@@ -2606,7 +2579,6 @@ auth.onAuthStateChanged(async user => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('d-date').value  = new Date().toISOString().slice(0,7);
-document.getElementById('tr-date').value = new Date().toISOString().slice(0,10);
 document.getElementById('fl-date').value = new Date().toISOString().slice(0,10);
 </script>
 </body>
