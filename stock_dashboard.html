@@ -985,7 +985,6 @@ function render() {
 function renderSummary() {
   const { mkt, cost, pnl, totalDiv, loan, credit, totalDebt, net, realizedPnl, totalReturn } = calcSummary();
   const pnlPct   = cost ? pnl/cost*100 : null;
-  const totalPct = cost ? totalReturn/cost*100 : null;
 
   document.getElementById('c-mkt').textContent  = mkt  ? fmtNT(mkt)  : '—';
   document.getElementById('c-cost').textContent = cost ? fmtNT(cost) : '—';
@@ -999,12 +998,16 @@ function renderSummary() {
 
   document.getElementById('c-div').textContent = totalDiv ? '+NT$'+fmtN(totalDiv) : 'NT$0';
 
+  // 累計總報酬：用績效公式（市值+現金+提領-投入），跟績效追蹤 tab 一致
+  const perf = calcPerformance();
+  const totalReturnVal = perf.totalIn > 0 ? perf.returnAmt : totalReturn;
+  const totalReturnPct = perf.totalIn > 0 ? perf.returnPct : (cost ? totalReturn/cost*100 : null);
   const te = document.getElementById('c-total');
-  te.textContent = mkt ? fmtPnl(totalReturn) : '—';
-  te.className = 'val ' + cls(totalReturn);
+  te.textContent = (mkt || perf.cash) ? fmtPnl(totalReturnVal) : '—';
+  te.className = 'val ' + cls(totalReturnVal);
   const tp = document.getElementById('c-total-pct');
-  tp.textContent = totalPct!=null ? sign(totalPct)+fmtN(totalPct,2)+'%' : '';
-  tp.className = 'sub ' + cls(totalReturn);
+  tp.textContent = totalReturnPct!=null ? sign(totalReturnPct)+fmtN(totalReturnPct,2)+'%' : '';
+  tp.className = 'sub ' + cls(totalReturnVal);
 
   const re = document.getElementById('c-realized');
   re.textContent = fmtPnl(realizedPnl);
