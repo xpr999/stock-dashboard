@@ -201,6 +201,15 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
 .flow-badge { display: inline-block; border-radius: 4px; font-size: 11px; padding: 2px 7px; font-weight: 600; }
 .badge-in  { background: #dcfce7; color: #166534; }
 .badge-out { background: #fee2e2; color: #b91c1c; }
+/* ── Activity Log Modal ── */
+.log-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 300; }
+.log-box { background: #fff; border-radius: 14px; padding: 20px; width: 94%; max-width: 560px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.log-box h2 { font-size: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.log-list { overflow-y: auto; flex: 1; }
+.log-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+.log-ts { color: var(--muted); white-space: nowrap; min-width: 90px; }
+.log-action { font-weight: 600; white-space: nowrap; min-width: 70px; }
+.log-detail { color: var(--text); }
 /* ── Responsive ── */
 @media (max-width: 700px) {
   .chart-grid { grid-template-columns: 1fr; }
@@ -224,6 +233,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
   <button class="hbtn" onclick="delProfile()">🗑</button>
   <button class="hbtn" id="refreshBtn" onclick="refreshPrices()">🔄 更新報價</button>
   <button class="hbtn" onclick="exportData()">📤 匯出</button>
+  <button class="hbtn" onclick="showActivityLog()">📝 紀錄</button>
   <label class="hbtn" style="cursor:pointer">
     📥 匯入<input type="file" accept=".json" onchange="importData(event)" style="display:none">
   </label>
@@ -601,6 +611,14 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
   </div>
 </div>
 
+<!-- ── Activity Log Modal ── -->
+<div id="log-modal" class="log-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="log-box">
+    <h2>📝 變動紀錄 <button onclick="document.getElementById('log-modal').style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted)">✕</button></h2>
+    <div id="log-list" class="log-list"></div>
+  </div>
+</div>
+
 <!-- ── Modal ── -->
 <div class="mbg" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="mbox">
@@ -634,6 +652,7 @@ function loadData(name) {
     creditLoans:  d.creditLoans  ?? [],
     snapshots:    d.snapshots    ?? [],
     capitalFlows: d.capitalFlows ?? [],
+    activityLog:  d.activityLog  ?? [],
     nextId:       d.nextId       ?? 0,
     nextPid:      d.nextPid      ?? 0,
     nextDivId:    d.nextDivId    ?? 0,
@@ -1425,6 +1444,28 @@ function renderDivChart() {
   });
 }
 
+// ── Activity Log ──────────────────────────────────────────────────────────────
+function logActivity(action, detail) {
+  D.activityLog = D.activityLog || [];
+  const ts = new Date().toLocaleString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  D.activityLog.push({ ts, action, detail });
+  // 最多保留 500 筆
+  if (D.activityLog.length > 500) D.activityLog = D.activityLog.slice(-500);
+}
+
+function showActivityLog() {
+  const el = document.getElementById('log-list');
+  const logs = (D.activityLog || []).slice().reverse();
+  if (!logs.length) {
+    el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">尚無變動紀錄</div>';
+  } else {
+    el.innerHTML = logs.map(l =>
+      `<div class="log-item"><span class="log-ts">${esc(l.ts)}</span><span class="log-action">${esc(l.action)}</span><span class="log-detail">${esc(l.detail)}</span></div>`
+    ).join('');
+  }
+  document.getElementById('log-modal').style.display = 'flex';
+}
+
 // ── Portfolio CRUD ─────────────────────────────────────────────────────────────
 function addStock() {
   const code   = document.getElementById('f-code').value.trim().toUpperCase();
@@ -1434,6 +1475,7 @@ function addStock() {
   const note   = document.getElementById('f-note').value.trim();
   if (!code || isNaN(shares) || isNaN(cost)) { alert('請填寫代號、張數、成本價'); return; }
   D.portfolio.push({ id: String(D.nextId++), code, shares, cost, note, sector: '', price: null, prev: null, updatedAt: null });
+  logActivity('新增持股', `${code} ${shares}張 @ $${cost}${source === 'new' ? '（新資金）' : '（帳內）'}`);
   // 新資金投入 → 自動建立資金流入紀錄
   if (source === 'new') {
     const amount = Math.round(cost * shares * 1000);
@@ -1451,7 +1493,9 @@ function addStock() {
 }
 function delStock(id) {
   if (!confirm('確定刪除此筆持股？')) return;
+  const del = D.portfolio.find(s => s.id === id);
   D.portfolio = D.portfolio.filter(s => s.id !== id);
+  if (del) logActivity('刪除持股', `${del.code} ${del.shares}張`);
   saveData(currentProfile, D);
   render();
 }
@@ -1472,6 +1516,7 @@ function addDividend() {
   const note   = document.getElementById('d-note').value.trim();
   if (!code || !date || isNaN(amount) || amount <= 0) { alert('請填寫代號、日期、配息金額'); return; }
   D.dividends.push({ id: String(D.nextDivId++), code, date, amount, note });
+  logActivity('新增配息', `${code} ${date} NT$${fmtN(amount)}`);
   saveData(currentProfile, D);
   document.getElementById('d-code').value   = '';
   document.getElementById('d-amount').value = '0';
@@ -1480,7 +1525,9 @@ function addDividend() {
 }
 function delDividend(id) {
   if (!confirm('確定刪除此筆配息記錄？')) return;
+  const del = D.dividends.find(d => d.id === id);
   D.dividends = D.dividends.filter(d => d.id !== id);
+  if (del) logActivity('刪除配息', `${del.code} NT$${fmtN(del.amount)}`);
   saveData(currentProfile, D);
   render();
 }
@@ -1495,6 +1542,7 @@ function addPledge() {
   const note   = document.getElementById('p-note').value.trim();
   if (!code || isNaN(shares) || isNaN(loan)) { alert('請填寫代號、張數、借款金額'); return; }
   D.pledges.push({ id: String(D.nextPid++), code, shares, loan, rate, bank, note });
+  logActivity('新增質押', `${code} ${shares}張 借款NT$${fmtN(loan)}`);
   saveData(currentProfile, D);
   document.getElementById('p-code').value = '';
   document.getElementById('p-bank').value = '';
@@ -1503,7 +1551,9 @@ function addPledge() {
 }
 function delPledge(id) {
   if (!confirm('確定刪除此筆質押記錄？')) return;
+  const del = D.pledges.find(p => p.id === id);
   D.pledges = D.pledges.filter(p => p.id !== id);
+  if (del) logActivity('刪除質押', `${del.code} ${del.shares}張`);
   saveData(currentProfile, D);
   render();
 }
@@ -1517,6 +1567,7 @@ function addCredit() {
   if (!bank || isNaN(amount)) { alert('請填寫金融機構與借款金額'); return; }
   D.creditLoans = D.creditLoans || [];
   D.creditLoans.push({ id: String(D.nextCreditId++), bank, amount, rate, note });
+  logActivity('新增信貸', `${bank} NT$${fmtN(amount)}`);
   saveData(currentProfile, D);
   document.getElementById('cr-bank').value = '';
   document.getElementById('cr-note').value = '';
@@ -1524,7 +1575,9 @@ function addCredit() {
 }
 function delCredit(id) {
   if (!confirm('確定刪除此筆信貸記錄？')) return;
+  const del = (D.creditLoans||[]).find(c => c.id === id);
   D.creditLoans = (D.creditLoans||[]).filter(c => c.id !== id);
+  if (del) logActivity('刪除信貸', `${del.bank} NT$${fmtN(del.amount)}`);
   saveData(currentProfile, D);
   render();
 }
@@ -1647,6 +1700,10 @@ function addTrade() {
     targetCode: targetCode || null,
     note,
   });
+  const tradeDetail = action === '換股'
+    ? `${code} → ${targetCode} ${shares}張 @ $${sellPrice} 損益${fmtPnl(pnl)}`
+    : `${code} ${shares}張 @ $${sellPrice} 損益${fmtPnl(pnl)}`;
+  logActivity(action, tradeDetail);
   // 賣出 + 提領 → 自動建立資金流出紀錄
   if (action === '賣出' && dest === 'withdraw') {
     const outAmount = Math.round(sellPrice * shares * 1000);
@@ -1673,7 +1730,9 @@ function addTrade() {
 
 function delTrade(id) {
   if (!confirm('確定刪除此筆交易紀錄？')) return;
+  const del = D.trades.find(t => t.id === id);
   D.trades = D.trades.filter(t => t.id !== id);
+  if (del) logActivity('刪除交易', `${del.action} ${del.code} ${del.shares}張`);
   saveData(currentProfile, D);
   renderTrades();
   renderSummary();
@@ -1890,6 +1949,7 @@ function importData(evt) {
         trades:       imp.trades       ?? [],
         creditLoans:  imp.creditLoans  ?? [],
         capitalFlows: imp.capitalFlows ?? [],
+        activityLog:  imp.activityLog  ?? [],
         snapshots:    imp.snapshots    ?? [],
         nextId:       imp.nextId       ?? imp.portfolio.length,
         nextPid:      imp.nextPid      ?? 0,
@@ -2105,6 +2165,7 @@ function addCapitalFlow() {
   if (!date || isNaN(amount) || amount <= 0) { alert('請填寫日期和金額'); return; }
   D.capitalFlows = D.capitalFlows || [];
   D.capitalFlows.push({ id: String(D.nextFlowId++), date, type, amount: Math.round(amount), note });
+  logActivity(type === 'in' ? '資金投入' : '資金提領', `NT$${fmtN(Math.round(amount))} ${note}`);
   saveData(currentProfile, D);
   document.getElementById('fl-amount').value = '';
   document.getElementById('fl-note').value   = '';
@@ -2113,7 +2174,9 @@ function addCapitalFlow() {
 
 function delCapitalFlow(id) {
   if (!confirm('確定刪除此筆資金紀錄？')) return;
+  const del = (D.capitalFlows || []).find(f => f.id === id);
   D.capitalFlows = (D.capitalFlows || []).filter(f => f.id !== id);
+  if (del) logActivity('刪除資金紀錄', `${del.type === 'in' ? '投入' : '提領'} NT$${fmtN(del.amount)}`);
   saveData(currentProfile, D);
   renderPerformance();
 }
