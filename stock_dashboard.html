@@ -268,7 +268,7 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <div class="card"><div class="lbl">📊 投入成本</div><div class="val" id="c-cost">—</div></div>
     <div class="card"><div class="lbl">📈 未實現損益</div><div class="val" id="c-pnl">—</div><div class="sub" id="c-pnl-pct"></div></div>
     <div class="card"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#7c3aed">—</div></div>
-    <div class="card"><div class="lbl">🎯 含息總報酬</div><div class="val" id="c-total">—</div><div class="sub" id="c-total-pct"></div></div>
+    <div class="card"><div class="lbl">🎯 累計總報酬</div><div class="val" id="c-total">—</div><div class="sub" id="c-total-pct"></div></div>
     <div class="card"><div class="lbl">💹 已實現損益</div><div class="val" id="c-realized">NT$0</div></div>
     <div class="card"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
     <div class="card"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
@@ -949,7 +949,7 @@ function calcSummaryForData(d) {
   const credit = (d.creditLoans||[]).reduce((a, c) => a + c.amount, 0);
   const totalDebt = loan + credit;
   const realizedPnl = (d.trades||[]).reduce((a, t) => a + (t.pnl||0), 0);
-  return { mkt, cost, pnl, totalDiv, loan, credit, totalDebt, net: mkt - totalDebt, realizedPnl, totalReturn: pnl + totalDiv };
+  return { mkt, cost, pnl, totalDiv, loan, credit, totalDebt, net: mkt - totalDebt, realizedPnl, totalReturn: pnl + realizedPnl + totalDiv };
 }
 
 function calcSummary() {
