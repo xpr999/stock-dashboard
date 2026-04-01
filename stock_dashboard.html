@@ -286,27 +286,6 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
         <div class="fg"><label>張數</label><input id="f-shares" type="number" value="1" min="0.01" step="0.01" class="short"></div>
         <div class="fg"><label>成本價（每股）</label><input id="f-cost" type="number" value="100" min="0.01" step="0.01" class="short"></div>
         <div class="fg">
-          <label>產業領域</label>
-          <select id="f-sector" class="short" style="width:110px">
-            <option value="">自動判斷</option>
-            <option value="半導體">半導體</option>
-            <option value="電子製造">電子製造</option>
-            <option value="電子零組件">電子零組件</option>
-            <option value="光學">光學</option>
-            <option value="ETF">ETF</option>
-            <option value="金融保險">金融保險</option>
-            <option value="石化塑膠">石化塑膠</option>
-            <option value="鋼鐵">鋼鐵</option>
-            <option value="電信">電信</option>
-            <option value="航運">航運</option>
-            <option value="食品飲料">食品飲料</option>
-            <option value="水泥">水泥</option>
-            <option value="生技醫療">生技醫療</option>
-            <option value="營建">營建</option>
-            <option value="其他">其他</option>
-          </select>
-        </div>
-        <div class="fg">
           <label>資金來源</label>
           <select id="f-source" class="short" style="width:110px">
             <option value="new">新資金投入</option>
@@ -333,15 +312,20 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
     <div class="form-wrap">
       <h3>➕ 新增配息記錄</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
-        填入實際收到的總配息金額（已扣稅後入帳金額）
+        輸入每股配息金額，系統自動計算總額。也可點「查詢」從公開資料帶入。
       </p>
       <div class="fgrid">
-        <div class="fg"><label>股票代號</label><input id="d-code" placeholder="如 00878" class="short"></div>
+        <div class="fg"><label>股票代號</label><input id="d-code" placeholder="如 00878" class="short" oninput="autoFillDivShares()"></div>
         <div class="fg"><label>配息日期</label><input id="d-date" type="month"></div>
-        <div class="fg"><label>實收配息金額（元）</label><input id="d-amount" type="number" value="0" min="0" step="1"></div>
+        <div class="fg"><label>每股配息（元）</label><input id="d-perShare" type="number" step="0.01" placeholder="如 0.73" class="short" oninput="calcDivAmount()"></div>
+        <div class="fg"><label>持有張數</label><input id="d-shares" type="number" step="0.01" class="short" oninput="calcDivAmount()"></div>
+        <div class="fg"><label>實收金額（元）</label><input id="d-amount" type="number" value="0" min="0" step="1"></div>
         <div class="fg"><label>備註（選填）</label><input id="d-note" placeholder="如 第一季配息"></div>
+        <button class="badd" onclick="lookupDividend()" style="background:#7c3aed">🔍 查詢</button>
         <button class="badd" onclick="addDividend()">新增</button>
       </div>
+      <div id="d-calc-info" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+      <div id="d-lookup-result" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -810,6 +794,69 @@ function divForEntry(entry) {
   if (total === 0) return 0;
   const totalShares = D.portfolio.filter(s => s.code === entry.code).reduce((a, s) => a + s.shares, 0);
   return totalShares > 0 ? total * (entry.shares / totalShares) : 0;
+}
+
+// ── Dividend auto-calc ────────────────────────────────────────────────────────
+function autoFillDivShares() {
+  const code = document.getElementById('d-code').value.trim().toUpperCase();
+  const totalShares = D.portfolio.filter(s => s.code === code).reduce((a, s) => a + s.shares, 0);
+  if (totalShares > 0) {
+    document.getElementById('d-shares').value = totalShares;
+    calcDivAmount();
+  }
+}
+
+function calcDivAmount() {
+  const perShare = parseFloat(document.getElementById('d-perShare').value);
+  const shares   = parseFloat(document.getElementById('d-shares').value);
+  const info     = document.getElementById('d-calc-info');
+  if (!isNaN(perShare) && !isNaN(shares) && perShare > 0 && shares > 0) {
+    const amount = Math.round(perShare * shares * 1000);
+    document.getElementById('d-amount').value = amount;
+    info.textContent = `${perShare} × ${shares}張 × 1000股 = NT$${amount.toLocaleString()}`;
+  } else {
+    info.textContent = '';
+  }
+}
+
+async function lookupDividend() {
+  const code = document.getElementById('d-code').value.trim().toUpperCase();
+  if (!code) { alert('請先輸入股票代號'); return; }
+  const el = document.getElementById('d-lookup-result');
+  el.innerHTML = '<span style="color:var(--muted);font-size:12px">查詢中…</span>';
+  try {
+    const startDate = new Date(Date.now() - 86400000 * 730).toISOString().slice(0, 10);
+    const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${code}&start_date=${startDate}`;
+    const r = await fetchWithTimeout(url, 10000);
+    if (!r.ok) throw new Error('API 回應錯誤');
+    const j = await r.json();
+    const rows = j?.data;
+    if (!rows?.length) { el.innerHTML = '<span style="color:#f59e0b;font-size:12px">查無配息資料，請手動輸入每股配息</span>'; return; }
+    // 取最近幾筆，計算每股現金股利
+    const recent = rows.slice(-6).reverse().map(row => {
+      const cash = parseFloat(row.CashEarningsDistribution || 0) + parseFloat(row.CashStaticDistribution || 0);
+      return { date: row.date, cash: Math.round(cash * 10000) / 10000 };
+    }).filter(r => r.cash > 0);
+    if (!recent.length) { el.innerHTML = '<span style="color:#f59e0b;font-size:12px">無現金配息資料</span>'; return; }
+    el.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:4px">近期配息紀錄（點擊帶入）：</div>` +
+      recent.map(r =>
+        `<button onclick="applyDivLookup(${r.cash},'${r.date}')" style="margin:2px 4px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:12px">
+          ${r.date} — <strong style="color:#7c3aed">$${r.cash}/股</strong>
+        </button>`
+      ).join('');
+  } catch(e) {
+    el.innerHTML = '<span style="color:#ef4444;font-size:12px">查詢失敗，請手動輸入</span>';
+  }
+}
+
+function applyDivLookup(perShare, date) {
+  document.getElementById('d-perShare').value = perShare;
+  // 帶入日期（轉成 YYYY-MM 格式）
+  if (date) document.getElementById('d-date').value = date.slice(0, 7);
+  autoFillDivShares();
+  calcDivAmount();
+  document.getElementById('d-lookup-result').innerHTML =
+    `<span style="color:#15803d;font-size:12px">✓ 已帶入 $${perShare}/股</span>`;
 }
 
 // ── Calculation ───────────────────────────────────────────────────────────────
@@ -1383,11 +1430,10 @@ function addStock() {
   const code   = document.getElementById('f-code').value.trim().toUpperCase();
   const shares = parseFloat(document.getElementById('f-shares').value);
   const cost   = parseFloat(document.getElementById('f-cost').value);
-  const sector = document.getElementById('f-sector').value;
   const source = document.getElementById('f-source').value;
   const note   = document.getElementById('f-note').value.trim();
   if (!code || isNaN(shares) || isNaN(cost)) { alert('請填寫代號、張數、成本價'); return; }
-  D.portfolio.push({ id: String(D.nextId++), code, shares, cost, note, sector, price: null, prev: null, updatedAt: null });
+  D.portfolio.push({ id: String(D.nextId++), code, shares, cost, note, sector: '', price: null, prev: null, updatedAt: null });
   // 新資金投入 → 自動建立資金流入紀錄
   if (source === 'new') {
     const amount = Math.round(cost * shares * 1000);
@@ -1400,7 +1446,6 @@ function addStock() {
   saveData(currentProfile, D);
   document.getElementById('f-code').value   = '';
   document.getElementById('f-note').value   = '';
-  document.getElementById('f-sector').value = '';
   document.getElementById('f-source').value = 'new';
   render();
 }
