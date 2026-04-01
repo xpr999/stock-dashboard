@@ -976,7 +976,7 @@ function render() {
 }
 
 function renderSummary() {
-  const { mkt, cost, pnl, totalDiv, loan, credit, net, realizedPnl, totalReturn } = calcSummary();
+  const { mkt, cost, pnl, totalDiv, loan, credit, totalDebt, net, realizedPnl, totalReturn } = calcSummary();
   const pnlPct   = cost ? pnl/cost*100 : null;
   const totalPct = cost ? totalReturn/cost*100 : null;
 
