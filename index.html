@@ -1746,35 +1746,27 @@ function fetchWithTimeout(url, ms=8000) {
   return fetch(url, {cache:'no-cache', signal: ctrl.signal}).finally(() => clearTimeout(t));
 }
 
-// 依序嘗試：直連 → corsproxy.io → allorigins.win
-async function fetchAny(url) {
-  const tries = [
-    () => fetchWithTimeout(url),
-    () => fetchWithTimeout('https://corsproxy.io/?' + encodeURIComponent(url)),
-    () => fetchWithTimeout('https://api.allorigins.win/get?url=' + encodeURIComponent(url)),
-  ];
-  for (const fn of tries) {
-    try {
-      const r = await fn();
-      if (!r.ok) continue;
-      const text = await r.text();
-      let obj; try { obj = JSON.parse(text); } catch(e) { continue; }
-      // allorigins 把內容包在 {contents:"..."}
-      if (typeof obj?.contents === 'string') { try { return JSON.parse(obj.contents); } catch(e) { continue; } }
-      return obj;
-    } catch(e) {}
-  }
-  return null;
+// 直連取 JSON（不再依賴 CORS proxy，因為 corsproxy.io / allorigins.win 都已失效）
+async function fetchJSON(url) {
+  try {
+    const r = await fetchWithTimeout(url);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
 }
 
 async function loadTSEPrices() {
   if (_tsePrices) return _tsePrices;
-  const j = await fetchAny('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL');
-  if (Array.isArray(j)) {
+  // www.twse.com.tw 有 CORS（access-control-allow-origin: *），openapi.twse.com.tw 沒有
+  const j = await fetchJSON('https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=json');
+  if (j?.data && Array.isArray(j.data)) {
     _tsePrices = {};
-    for (const item of j) {
-      const p = parseFloat(item.ClosingPrice), ch = parseFloat(item.Change);
-      if (p > 0) _tsePrices[item.Code] = { price: p, prev: p - (isNaN(ch) ? 0 : ch) };
+    // fields: 證券代號(0), 證券名稱(1), 成交股數(2), 成交金額(3), 開盤價(4), 最高價(5), 最低價(6), 收盤價(7), 漲跌價差(8), 成交筆數(9)
+    for (const row of j.data) {
+      const code = (row[0]||'').trim();
+      const p  = parseFloat((row[7]||'').replace(/,/g,''));
+      const ch = parseFloat((row[8]||'').replace(/,/g,''));
+      if (p > 0) _tsePrices[code] = { price: p, prev: p - (isNaN(ch) ? 0 : ch) };
     }
   }
   return _tsePrices;
@@ -1782,7 +1774,8 @@ async function loadTSEPrices() {
 
 async function loadOTCPrices() {
   if (_otcPrices) return _otcPrices;
-  const j = await fetchAny('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes');
+  // TPEx 沒有 CORS，從 GitHub Pages 會被擋；從 localhost 可能成功
+  const j = await fetchJSON('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes');
   if (Array.isArray(j)) {
     _otcPrices = {};
     for (const item of j) {
@@ -1805,7 +1798,7 @@ async function loadTWSELiveBatch(codes) {
   _livePrices = {};
   const query = [...codes.map(c=>`tse_${c}.tw`), ...codes.map(c=>`otc_${c}.tw`)].join('|');
   const url = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=${query}&json=1&delay=0`;
-  const data = await fetchAny(url);
+  const data = await fetchJSON(url);
   if (data?.msgArray) {
     for (const item of data.msgArray) {
       const code = item.c;
@@ -1847,29 +1840,20 @@ async function loadFinMindBatch(codes) {
 
 async function tryYahoo(code) {
   for (const suffix of ['.TW', '.TWO']) {
-    const baseUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${code}${suffix}?interval=1d&range=5d`;
-    const attempts = [
-      baseUrl,
-      `https://corsproxy.io/?${encodeURIComponent(baseUrl)}`,
-      `https://api.allorigins.win/get?url=${encodeURIComponent(baseUrl)}`,
-    ];
-    for (const url of attempts) {
-      try {
-        const r = await fetchWithTimeout(url);
-        if (!r.ok) continue;
-        const text = await r.text();
-        let obj; try { obj = JSON.parse(text); } catch(e) { continue; }
-        if (typeof obj?.contents === 'string') { try { obj = JSON.parse(obj.contents); } catch(e) { continue; } }
-        const res = obj?.chart?.result?.[0];
-        if (!res) continue;
-        const price = res.meta?.regularMarketPrice;
-        const prev  = res.meta?.previousClose ?? res.meta?.chartPreviousClose;
-        if (price != null) return { price, prev: prev ?? price };
-        const closes = (res.indicators?.quote?.[0]?.close ?? []).filter(x => x != null);
-        if (closes.length >= 2) return { price: closes.at(-1), prev: closes.at(-2) };
-        if (closes.length === 1) return { price: closes[0], prev: closes[0] };
-      } catch(e) {}
-    }
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}${suffix}?interval=1d&range=5d`;
+      const r = await fetchWithTimeout(url);
+      if (!r.ok) continue;
+      const obj = await r.json();
+      const res = obj?.chart?.result?.[0];
+      if (!res) continue;
+      const price = res.meta?.regularMarketPrice;
+      const prev  = res.meta?.previousClose ?? res.meta?.chartPreviousClose;
+      if (price != null) return { price, prev: prev ?? price };
+      const closes = (res.indicators?.quote?.[0]?.close ?? []).filter(x => x != null);
+      if (closes.length >= 2) return { price: closes.at(-1), prev: closes.at(-2) };
+      if (closes.length === 1) return { price: closes[0], prev: closes[0] };
+    } catch(e) {}
   }
   return null;
 }
