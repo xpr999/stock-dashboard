@@ -953,7 +953,7 @@ function renderSummary() {
   document.getElementById('c-credit').textContent = 'NT$' + fmtN(credit);
   const netVal = (mkt || 0) - totalDebt;
   const ne = document.getElementById('c-net');
-  ne.textContent = (mkt || cash) ? fmtNT(netVal) : '—';
+  ne.textContent = (mkt || cost) ? fmtNT(netVal) : '—';
   ne.className = 'val ' + cls(netVal);
 
   const EXPOSURE_MULTI = { '0050': 1, '00631L': 2, '00663L': 2, '00685L': 2 };
