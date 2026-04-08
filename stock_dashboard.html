@@ -1880,25 +1880,34 @@ async function refreshPrices() {
   }
   const codes = [...new Set(Object.values(allProfileData).flatMap(d => d.portfolio.map(s => s.code)))];
 
-  await Promise.all([loadTSEPrices(), loadOTCPrices(), loadTWSELiveBatch(codes), loadFinMindBatch(codes)]);
+  // 先跑即時報價（最重要），再平行跑其他備援
+  await loadTWSELiveBatch(codes);
+  await Promise.all([loadTSEPrices(), loadOTCPrices(), loadFinMindBatch(codes)]);
+  const liveOk = Object.keys(_livePrices||{}).length;
   const tseOk = !!_tsePrices, otcOk = !!_otcPrices;
-  console.log('[報價] TWSE:', tseOk ? `${Object.keys(_tsePrices).length}筆` : '失敗',
+  console.log('[報價] 即時:', liveOk ? `${liveOk}筆` : '失敗',
+              '| TWSE:', tseOk ? `${Object.keys(_tsePrices).length}筆` : '失敗',
               '| TPEx:', otcOk ? `${Object.keys(_otcPrices).length}筆` : '失敗');
 
   let fail = 0;
   const results = await Promise.all(codes.map(async code => {
+    // 優先用即時報價；只有即時沒拿到的股票才用收盤備援
     let r = _livePrices?.[code] ?? null;          // TWSE 即時（批量）
     if (!r) r = _finmindPrices?.[code] ?? null;  // FinMind（直接 CORS，免 proxy）
-    if (!r) r = await tryYahoo(code);            // Yahoo 備用
-    if (!r) r = await tryOpenAPI(code);          // 收盤資料最後備用
-    return { code, r };
+    if (!r) r = await tryOpenAPI(code);          // TWSE/TPEx 收盤資料
+    return { code, r, isLive: !!_livePrices?.[code] };
   }));
 
   const now = new Date().toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  for (const { code, r } of results) {
+  for (const { code, r, isLive } of results) {
     if (r) {
       for (const [name, data] of Object.entries(allProfileData)) {
         data.portfolio.filter(s => s.code===code).forEach(s => {
+          // 如果已有價格、且這次拿到的不是即時價，跳過（避免昨收蓋掉盤中價）
+          if (s.price && !isLive && Math.abs(s.price - r.price) > 0.01) {
+            console.log(`[報價] ${code} 跳過：現有${s.price}，收盤備援${r.price}`);
+            return;
+          }
           s.prev  = r.prev != null ? Math.round(r.prev*100)/100 : (s.price ?? null);
           s.price = Math.round(r.price*100)/100;
           s.updatedAt = now;
