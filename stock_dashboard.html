@@ -1746,10 +1746,19 @@ function fetchWithTimeout(url, ms=8000) {
   return fetch(url, {cache:'no-cache', signal: ctrl.signal}).finally(() => clearTimeout(t));
 }
 
-// 直連取 JSON（不再依賴 CORS proxy，因為 corsproxy.io / allorigins.win 都已失效）
+// 自建 CORS proxy（Vercel），不再依賴第三方 proxy
+const PROXY = 'https://stock-proxy-psi.vercel.app/api/proxy?url=';
+
+// 直連 → 若 CORS 被擋則走自建 proxy
 async function fetchJSON(url) {
+  // 先嘗試直連（有些端點本身有 CORS）
   try {
-    const r = await fetchWithTimeout(url);
+    const r = await fetchWithTimeout(url, 5000);
+    if (r.ok) return await r.json();
+  } catch(e) {}
+  // 直連失敗，走自建 proxy
+  try {
+    const r = await fetchWithTimeout(PROXY + encodeURIComponent(url));
     if (!r.ok) return null;
     return await r.json();
   } catch(e) { return null; }
