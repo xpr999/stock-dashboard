@@ -1746,8 +1746,8 @@ function fetchWithTimeout(url, ms=8000) {
   return fetch(url, {cache:'no-cache', signal: ctrl.signal}).finally(() => clearTimeout(t));
 }
 
-// 自建 CORS proxy（Vercel），不再依賴第三方 proxy
-const PROXY = 'https://stock-proxy-psi.vercel.app/api/proxy?url=';
+// 自建 CORS proxy（Cloudflare Worker），不再依賴第三方 proxy
+const PROXY = 'https://stock-proxy.xpr999.workers.dev/?url=';
 
 // 直連 → 若 CORS 被擋則走自建 proxy
 async function fetchJSON(url) {
