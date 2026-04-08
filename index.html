@@ -1812,8 +1812,18 @@ async function loadTWSELiveBatch(codes) {
     for (const item of data.msgArray) {
       const code = item.c;
       if (!code || _livePrices[code]) continue;
-      const price = parseFloat(item.z);
-      const prev  = parseFloat(item.y);
+      let price = parseFloat(item.z);
+      const prev = parseFloat(item.y);
+      // z=- 表示今天還沒成交，用買賣報價中間價（槓桿 ETF 常見）
+      if (isNaN(price) || price <= 0) {
+        const bid = parseFloat((item.b||'').split('_')[0]);
+        const ask = parseFloat((item.a||'').split('_')[0]);
+        if (!isNaN(bid) && bid > 0 && !isNaN(ask) && ask > 0) {
+          price = Math.round((bid + ask) / 2 * 100) / 100;
+        } else if (!isNaN(bid) && bid > 0) {
+          price = bid;
+        }
+      }
       if (!isNaN(price) && price > 0) {
         _livePrices[code] = { price, prev: isNaN(prev) ? price : prev };
       }
