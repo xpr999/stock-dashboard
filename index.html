@@ -1880,40 +1880,34 @@ async function refreshPrices() {
   }
   const codes = [...new Set(Object.values(allProfileData).flatMap(d => d.portfolio.map(s => s.code)))];
 
-  // 先跑即時報價（最重要），再平行跑其他備援
-  await loadTWSELiveBatch(codes);
-  await Promise.all([loadTSEPrices(), loadOTCPrices(), loadFinMindBatch(codes)]);
+  // 全部平行載入，即時 + 收盤備援同時跑
+  await Promise.all([loadTWSELiveBatch(codes), loadTSEPrices(), loadOTCPrices(), loadFinMindBatch(codes)]);
   const liveOk = Object.keys(_livePrices||{}).length;
   const tseOk = !!_tsePrices, otcOk = !!_otcPrices;
-  console.log('[報價] 即時:', liveOk ? `${liveOk}筆` : '失敗',
-              '| TWSE:', tseOk ? `${Object.keys(_tsePrices).length}筆` : '失敗',
-              '| TPEx:', otcOk ? `${Object.keys(_otcPrices).length}筆` : '失敗');
+  const fmOk = Object.keys(_finmindPrices||{}).length;
+  console.log(`[報價] 即時:${liveOk}筆 | TWSE:${tseOk?Object.keys(_tsePrices).length:0}筆 | TPEx:${otcOk?Object.keys(_otcPrices).length:0}筆 | FinMind:${fmOk}筆`);
 
   let fail = 0;
   const results = await Promise.all(codes.map(async code => {
-    // 優先用即時報價；只有即時沒拿到的股票才用收盤備援
-    let r = _livePrices?.[code] ?? null;          // TWSE 即時（批量）
-    if (!r) r = _finmindPrices?.[code] ?? null;  // FinMind（直接 CORS，免 proxy）
+    let r = _livePrices?.[code] ?? null;          // TWSE 即時（批量，盤中最準）
+    if (!r) r = _finmindPrices?.[code] ?? null;  // FinMind（直接 CORS）
     if (!r) r = await tryOpenAPI(code);          // TWSE/TPEx 收盤資料
-    return { code, r, isLive: !!_livePrices?.[code] };
+    const src = _livePrices?.[code] ? '即時' : _finmindPrices?.[code] ? 'FinMind' : r ? '收盤' : '無';
+    return { code, r, src };
   }));
 
   const now = new Date().toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  for (const { code, r, isLive } of results) {
+  for (const { code, r, src } of results) {
     if (r) {
+      console.log(`[報價] ${code}: ${r.price} (${src})`);
       for (const [name, data] of Object.entries(allProfileData)) {
         data.portfolio.filter(s => s.code===code).forEach(s => {
-          // 如果已有價格、且這次拿到的不是即時價，跳過（避免昨收蓋掉盤中價）
-          if (s.price && !isLive && Math.abs(s.price - r.price) > 0.01) {
-            console.log(`[報價] ${code} 跳過：現有${s.price}，收盤備援${r.price}`);
-            return;
-          }
           s.prev  = r.prev != null ? Math.round(r.prev*100)/100 : (s.price ?? null);
           s.price = Math.round(r.price*100)/100;
           s.updatedAt = now;
         });
       }
-    } else { fail++; }
+    } else { fail++; console.log(`[報價] ${code}: 失敗`); }
   }
 
   // 儲存所有帳戶
