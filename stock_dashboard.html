@@ -11,68 +11,151 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --up:      #d32f2f;
-  --dn:      #388e3c;
-  --primary: #1565c0;
-  --bg:      #f0f4f8;
+  --up:      #ef4444;
+  --dn:      #10b981;
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --primary-soft: #eef2ff;
+  --bg:      #f7f8fc;
+  --bg-deep: #eef0f7;
   --surface: #ffffff;
-  --border:  #dde1e7;
-  --text:    #1a1a2e;
-  --muted:   #6b7280;
-  --shadow:  0 2px 10px rgba(0,0,0,0.08);
-  --radius:  10px;
+  --border:  #e5e7ef;
+  --text:    #0f172a;
+  --muted:   #64748b;
+  --warn:    #f59e0b;
+  --danger:  #dc2626;
+  --safe:    #10b981;
+  --shadow:  0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06);
+  --shadow-lg: 0 4px 16px rgba(15,23,42,0.08), 0 12px 32px rgba(15,23,42,0.10);
+  --radius:  14px;
+  --radius-sm: 8px;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   background: var(--bg); color: var(--text); font-size: 14px;
+  background-image: radial-gradient(at 15% 0%, rgba(99,102,241,0.06) 0px, transparent 50%),
+                    radial-gradient(at 85% 0%, rgba(139,92,246,0.05) 0px, transparent 50%);
+  background-attachment: fixed;
 }
 /* ── Header ── */
 header {
-  background: var(--primary); color: #fff;
-  padding: 10px 20px; display: flex; align-items: center;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #fff;
+  padding: 12px 24px; display: flex; align-items: center;
   gap: 8px; flex-wrap: wrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 20px rgba(79,70,229,0.25);
   position: sticky; top: 0; z-index: 50;
 }
-.logo { font-size: 17px; font-weight: 700; margin-right: auto; white-space: nowrap; }
+.logo { font-size: 18px; font-weight: 700; margin-right: auto; white-space: nowrap; letter-spacing: 0.3px; }
 .hbtn {
-  padding: 5px 12px; border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.45);
-  background: rgba(255,255,255,0.12); color: #fff;
+  padding: 6px 13px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.14); color: #fff;
   cursor: pointer; font-size: 13px; white-space: nowrap;
+  transition: all 0.15s; backdrop-filter: blur(8px);
 }
-.hbtn:hover { background: rgba(255,255,255,0.25); }
-header select { padding: 5px 8px; border-radius: 6px; border: none; font-size: 14px; cursor: pointer; max-width: 140px; }
+.hbtn:hover { background: rgba(255,255,255,0.28); transform: translateY(-1px); }
+header select { padding: 6px 10px; border-radius: 8px; border: none; font-size: 14px; cursor: pointer; max-width: 140px; }
 /* ── Main ── */
-main { padding: 16px 20px; max-width: 1300px; margin: 0 auto; }
+main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
+/* ── Hero summary ── */
+.hero {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.hero-card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 60%, #475569 100%);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  position: relative; overflow: hidden;
+}
+.hero-card::before {
+  content: ''; position: absolute; top: -40%; right: -10%;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-card .hc-lbl { font-size: 12px; color: rgba(255,255,255,0.7); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; position: relative; }
+.hero-card .hc-val { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; position: relative; }
+.hero-card .hc-sub { font-size: 13px; margin-top: 8px; opacity: 0.95; position: relative; }
+.hero-card .hc-pill { display: inline-block; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,0.15); font-size: 12px; font-weight: 600; margin-left: 6px; }
+.hero-card.alt {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%);
+}
+.hero-card.alt::before {
+  background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
+}
+.hero-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; position: relative; }
+.hero-mini { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
+.hero-mini .lbl { font-size: 11px; opacity: 0.8; }
+.hero-mini .val { font-size: 15px; font-weight: 600; margin-top: 2px; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero-card .hc-val { font-size: 26px; } }
 /* ── Cards ── */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-  gap: 11px; margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 18px;
 }
-.card { background: var(--surface); border-radius: var(--radius); padding: 13px 14px; box-shadow: var(--shadow); text-align: center; }
-.card .lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-.card .val { font-size: 17px; font-weight: 700; }
-.card .sub { font-size: 12px; margin-top: 3px; }
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  text-align: left;
+  border: 1px solid rgba(229,231,239,0.7);
+  position: relative; overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.card::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--primary); opacity: 0.7;
+}
+.card.c-asset::after  { background: linear-gradient(180deg, #4f46e5, #7c3aed); }
+.card.c-pl::after     { background: linear-gradient(180deg, #ef4444, #f97316); }
+.card.c-div::after    { background: linear-gradient(180deg, #a855f7, #ec4899); }
+.card.c-debt::after   { background: linear-gradient(180deg, #f59e0b, #ef4444); }
+.card.c-info::after   { background: linear-gradient(180deg, #06b6d4, #0ea5e9); }
+.card .lbl { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.2px; }
+.card .val { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+.card .sub { font-size: 12px; margin-top: 4px; font-weight: 500; }
 .up { color: var(--up); } .dn { color: var(--dn); }
 /* ── Tabs ── */
-.tabs { display: flex; gap: 2px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 0; padding: 0 4px; }
 .tbtn {
-  padding: 8px 18px; border: none; border-radius: 8px 8px 0 0;
-  background: #dde3ec; cursor: pointer; font-size: 13px; color: var(--muted);
+  padding: 10px 18px; border: none; border-radius: 10px 10px 0 0;
+  background: rgba(255,255,255,0.55); cursor: pointer; font-size: 13px; color: var(--muted);
+  font-weight: 500; transition: all 0.15s;
+  border: 1px solid transparent; border-bottom: none;
 }
-.tbtn.active { background: var(--surface); color: var(--text); font-weight: 600; }
+.tbtn:hover { background: rgba(255,255,255,0.85); color: var(--text); }
+.tbtn.active {
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 700;
+  border-color: var(--border);
+  box-shadow: 0 -2px 8px rgba(15,23,42,0.04);
+}
 /* ── Panel ── */
-.panel { background: var(--surface); border-radius: 0 var(--radius) var(--radius) var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.panel {
+  background: var(--surface);
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
 /* ── Table ── */
 .tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: #f6f8fa; padding: 9px 10px; text-align: right; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border); }
+th { background: #f8fafc; padding: 11px 12px; text-align: right; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border); font-size: 12px; letter-spacing: 0.2px; text-transform: uppercase; }
 th:first-child, th:nth-child(2) { text-align: left; }
-td { padding: 8px 10px; border-top: 1px solid var(--border); text-align: right; white-space: nowrap; }
+td { padding: 10px 12px; border-top: 1px solid #f1f5f9; text-align: right; white-space: nowrap; }
 td:first-child, td:nth-child(2) { text-align: left; }
-tr:hover td { background: #f9fafb; }
+tr:hover td { background: #fafbff; }
 td.up { color: var(--up); font-weight: 600; } td.dn { color: var(--dn); font-weight: 600; }
 td.div-col { color: #7c3aed; font-weight: 600; }   /* 配息欄：紫色 */
 td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 */
@@ -225,16 +308,89 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
 .swap-fg input:focus { border-color: var(--primary); }
 .swap-summary { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: var(--muted); }
 .swap-btns { display: flex; gap: 8px; justify-content: flex-end; }
+/* ── Stress Test ── */
+.stress-alert {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff1f2 100%);
+  border: 1.5px solid #fca5a5;
+  border-left: 5px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  display: none;
+  box-shadow: 0 4px 16px rgba(220,38,38,0.15);
+  animation: pulse-alert 2.4s ease-in-out infinite;
+}
+@keyframes pulse-alert {
+  0%, 100% { box-shadow: 0 4px 16px rgba(220,38,38,0.15); }
+  50%      { box-shadow: 0 4px 24px rgba(220,38,38,0.35); }
+}
+.stress-alert .sa-title { font-size: 15px; font-weight: 700; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.stress-alert .sa-body  { font-size: 13px; color: #7f1d1d; line-height: 1.6; }
+.stress-panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.stress-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+}
+.stress-panel-head h2 {
+  font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.stress-panel-head .sp-tip { font-size: 12px; color: var(--muted); }
+.stress-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.stress-col {
+  border-radius: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  background: #fafbff;
+  position: relative; overflow: hidden;
+}
+.stress-col.now    { background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); border-color: #c7d2fe; }
+.stress-col.warn   { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-color: #fcd34d; }
+.stress-col.danger { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-color: #fca5a5; }
+.stress-col.safe   { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-color: #86efac; }
+.stress-col .sc-head { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.stress-col .sc-tag  { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
+.tag-safe   { background: var(--safe);   color: #fff; }
+.tag-warn   { background: var(--warn);   color: #fff; }
+.tag-danger { background: var(--danger); color: #fff; }
+.tag-now    { background: #4f46e5;       color: #fff; }
+.stress-col .sc-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12.5px; border-top: 1px dashed rgba(0,0,0,0.06); }
+.stress-col .sc-row:first-of-type { border-top: none; padding-top: 0; }
+.stress-col .sc-row .lbl { color: var(--muted); }
+.stress-col .sc-row .val { font-weight: 700; }
+.stress-col .sc-big { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; margin: 6px 0 8px; }
+.stress-pledges { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 12px; }
+.stress-pledges h4 { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+.stress-pledge-row { display: grid; grid-template-columns: 90px repeat(4, 1fr); gap: 8px; padding: 5px 0; font-size: 12px; align-items: center; }
+.stress-pledge-row.header { color: var(--muted); font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.stress-pledge-row .ratio-cell { text-align: right; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+.ratio-safe   { background: rgba(16,185,129,0.12); color: #047857; }
+.ratio-warn   { background: rgba(245,158,11,0.15); color: #b45309; }
+.ratio-danger { background: rgba(220,38,38,0.15);  color: #b91c1c; }
+@media (max-width: 900px) { .stress-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .stress-grid { grid-template-columns: 1fr; } .stress-pledge-row { grid-template-columns: 70px repeat(3, 1fr); font-size: 11px; } .stress-pledge-row .pl-30 { display: none; } }
 /* ── Responsive ── */
 @media (max-width: 700px) {
   .chart-grid { grid-template-columns: 1fr; }
   .chart-wrap { height: 200px; }
 }
 @media (max-width: 600px) {
-  main { padding: 10px 12px; }
+  main { padding: 14px 12px; }
   .cards { grid-template-columns: repeat(2, 1fr); }
-  .card .val { font-size: 14px; }
+  .card .val { font-size: 15px; }
   .fg input, .fg select { width: 110px; }
+  .hero-card .hc-val { font-size: 24px; }
 }
 </style>
 </head>
@@ -262,18 +418,51 @@ td.tri-col { color: #0369a1; font-weight: 600; }   /* 含息投報率：藍色 *
 
 <main>
 
-  <!-- ── Summary cards ── -->
+  <!-- ── 壓力測試警告橫幅 ── -->
+  <div class="stress-alert" id="stress-alert">
+    <div class="sa-title">⚠️ 質押危險警告</div>
+    <div class="sa-body" id="stress-alert-body"></div>
+  </div>
+
+  <!-- ── Hero summary ── -->
+  <div class="hero">
+    <div class="hero-card">
+      <div class="hc-lbl">🏦 淨資產</div>
+      <div class="hc-val" id="c-net">—</div>
+      <div class="hc-sub" id="c-net-sub" style="display:none"></div>
+      <div class="hero-mini-grid">
+        <div class="hero-mini"><div class="lbl">💰 股票市值</div><div class="val" id="c-mkt">—</div></div>
+        <div class="hero-mini"><div class="lbl">📊 投入成本</div><div class="val" id="c-cost">—</div></div>
+      </div>
+    </div>
+    <div class="hero-card alt">
+      <div class="hc-lbl">🎯 累計總報酬</div>
+      <div class="hc-val" id="c-total">—</div>
+      <div class="hc-sub"><span id="c-total-pct"></span></div>
+      <div class="hero-mini-grid">
+        <div class="hero-mini"><div class="lbl">📈 未實現</div><div class="val" id="c-pnl">—</div></div>
+        <div class="hero-mini"><div class="lbl">💹 已實現</div><div class="val" id="c-realized">NT$0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Secondary KPI cards ── -->
   <div class="cards">
-    <div class="card"><div class="lbl">💰 股票市值</div><div class="val" id="c-mkt">—</div></div>
-    <div class="card"><div class="lbl">📊 投入成本</div><div class="val" id="c-cost">—</div></div>
-    <div class="card"><div class="lbl">📈 未實現損益</div><div class="val" id="c-pnl">—</div><div class="sub" id="c-pnl-pct"></div></div>
-    <div class="card"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#7c3aed">—</div></div>
-    <div class="card"><div class="lbl">🎯 累計總報酬</div><div class="val" id="c-total">—</div><div class="sub" id="c-total-pct"></div></div>
-    <div class="card"><div class="lbl">💹 已實現損益</div><div class="val" id="c-realized">NT$0</div></div>
-    <div class="card"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
-    <div class="card"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
-    <div class="card"><div class="lbl">🏦 淨資產</div><div class="val" id="c-net">—</div></div>
-    <div class="card"><div class="lbl">🎯 台股曝險</div><div class="val" id="c-exposure">—</div></div>
+    <div class="card c-div"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#7c3aed">—</div></div>
+    <div class="card c-pl"><div class="lbl">📊 未實現報酬率</div><div class="val" id="c-pnl-pct">—</div></div>
+    <div class="card c-debt"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
+    <div class="card c-debt"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
+    <div class="card c-info"><div class="lbl">🎯 台股曝險</div><div class="val" id="c-exposure">—</div></div>
+  </div>
+
+  <!-- ── 壓力測試面板 ── -->
+  <div class="stress-panel" id="stress-panel" style="display:none">
+    <div class="stress-panel-head">
+      <h2>📉 大跌壓力測試</h2>
+      <div class="sp-tip">槓桿 ETF 跌幅自動加倍計算 · 維持率 &lt;140% 警示 · &lt;130% 危險</div>
+    </div>
+    <div class="stress-grid" id="stress-grid"></div>
+    <div class="stress-pledges" id="stress-pledges" style="display:none"></div>
   </div>
 
   <!-- ── Tabs ── -->
@@ -924,15 +1113,22 @@ function renderSummary() {
   const { mkt, cost, pnl, totalDiv, loan, credit, totalDebt, net, realizedPnl, totalReturn } = calcSummary();
   const pnlPct   = cost ? pnl/cost*100 : null;
 
+  // helper: 只更新 up/dn class，不破壞原本的結構 class (val/hc-val/sub)
+  const setColor = (el, v) => {
+    el.classList.remove('up','dn');
+    if (v > 0) el.classList.add('up');
+    else if (v < 0) el.classList.add('dn');
+  };
+
   document.getElementById('c-mkt').textContent  = mkt  ? fmtNT(mkt)  : '—';
   document.getElementById('c-cost').textContent = cost ? fmtNT(cost) : '—';
 
   const pe = document.getElementById('c-pnl');
   pe.textContent = mkt ? fmtPnl(pnl) : '—';
-  pe.className = 'val ' + cls(pnl);
+  setColor(pe, pnl);
   const pp = document.getElementById('c-pnl-pct');
-  pp.textContent = pnlPct!=null ? sign(pnlPct)+fmtN(pnlPct,2)+'%' : '';
-  pp.className = 'sub ' + cls(pnl);
+  pp.textContent = pnlPct!=null ? sign(pnlPct)+fmtN(pnlPct,2)+'%' : '—';
+  setColor(pp, pnl);
 
   document.getElementById('c-div').textContent = totalDiv ? '+NT$'+fmtN(totalDiv) : 'NT$0';
 
@@ -940,21 +1136,18 @@ function renderSummary() {
   const totalPct = cost ? totalReturn/cost*100 : null;
   const te = document.getElementById('c-total');
   te.textContent = mkt ? fmtPnl(totalReturn) : '—';
-  te.className = 'val ' + cls(totalReturn);
   const tp = document.getElementById('c-total-pct');
   tp.textContent = totalPct!=null ? sign(totalPct)+fmtN(totalPct,2)+'%' : '';
-  tp.className = 'sub ' + cls(totalReturn);
 
   const re = document.getElementById('c-realized');
   re.textContent = fmtPnl(realizedPnl);
-  re.className = 'val ' + cls(realizedPnl);
+  setColor(re, realizedPnl);
 
   document.getElementById('c-loan').textContent   = 'NT$' + fmtN(loan);
   document.getElementById('c-credit').textContent = 'NT$' + fmtN(credit);
   const netVal = (mkt || 0) - totalDebt;
   const ne = document.getElementById('c-net');
   ne.textContent = (mkt || cost) ? fmtNT(netVal) : '—';
-  ne.className = 'val ' + cls(netVal);
 
   const EXPOSURE_MULTI = { '0050': 1, '00631L': 2, '00663L': 2, '00685L': 2 };
   const totalExposure = D.portfolio.reduce((sum, s) => {
@@ -964,6 +1157,8 @@ function renderSummary() {
     return sum;
   }, 0);
   document.getElementById('c-exposure').textContent = totalExposure > 0 ? fmtNT(totalExposure) : '—';
+
+  renderStressTest({ mkt, cost, pnl, totalDiv, loan, credit, totalDebt, realizedPnl, totalReturn });
 }
 
 function renderPortfolio() {
@@ -1030,6 +1225,153 @@ function renderDividends() {
     <td>${esc(d.note||'')}</td>
     <td><button class="bdel" onclick="delDividend('${d.id}')">刪除</button></td>
   </tr>`).join('');
+}
+
+// ── 壓力測試 ───────────────────────────────────────────────────────────────────
+const STRESS_DROPS = [0, -0.10, -0.20, -0.30]; // 0 = 現況
+const LEVERAGED_ETF = { '00631L': 2, '00663L': 2, '00685L': 2 }; // 槓桿倍數
+const RATIO_DANGER = 130;
+const RATIO_WARN   = 140;
+
+function applyDropToPrice(code, basePrice, drop) {
+  // drop 是負數，例如 -0.10
+  // 槓桿 ETF 跌幅放大
+  const leverage = LEVERAGED_ETF[code] || 1;
+  const effDrop = drop * leverage;
+  return basePrice * (1 + effDrop);
+}
+
+function calcStressScenario(drop) {
+  let mktAfter = 0, costAll = 0;
+  for (const s of D.portfolio) {
+    costAll += s.cost * s.shares * 1000;
+    if (s.price != null) {
+      const newPrice = applyDropToPrice(s.code, s.price, drop);
+      mktAfter += newPrice * s.shares * 1000;
+    }
+  }
+  // 質押逐筆計算
+  const pledgeResults = (D.pledges || []).map(pl => {
+    const stock = D.portfolio.find(x => x.code === pl.code && x.price != null);
+    const newPrice = stock ? applyDropToPrice(pl.code, stock.price, drop) : null;
+    const pmv = newPrice != null ? newPrice * pl.shares * 1000 : null;
+    const ratio = (pmv && pl.loan) ? pmv/pl.loan*100 : null;
+    return { code: pl.code, bank: pl.bank, pmv, loan: pl.loan, ratio };
+  });
+  const minRatio = pledgeResults.filter(p => p.ratio != null).reduce((min, p) => p.ratio < min ? p.ratio : min, Infinity);
+  return { drop, mktAfter, pledgeResults, minRatio: isFinite(minRatio) ? minRatio : null, costAll };
+}
+
+function ratioClass(r) {
+  if (r == null) return '';
+  if (r < RATIO_DANGER) return 'danger';
+  if (r < RATIO_WARN) return 'warn';
+  return 'safe';
+}
+function ratioLabel(r) {
+  if (r == null) return '—';
+  if (r < RATIO_DANGER) return '🔴 危險';
+  if (r < RATIO_WARN) return '⚠️ 警示';
+  return '✅ 安全';
+}
+
+function renderStressTest(s) {
+  const panel = document.getElementById('stress-panel');
+  const alert = document.getElementById('stress-alert');
+  const grid  = document.getElementById('stress-grid');
+  const plRow = document.getElementById('stress-pledges');
+
+  // 沒有持股或沒有報價 → 隱藏面板
+  if (!D.portfolio.length || !s.mkt) {
+    panel.style.display = 'none';
+    alert.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = '';
+
+  const scenarios = STRESS_DROPS.map(d => calcStressScenario(d));
+  const hasPledge = (D.pledges || []).length > 0;
+  const totalDebt = s.totalDebt;
+
+  // === 主格子 ===
+  grid.innerHTML = scenarios.map((sc, i) => {
+    const drop = sc.drop;
+    const isNow = drop === 0;
+    const newPnl     = sc.mktAfter - sc.costAll;
+    const newReturn  = newPnl + s.realizedPnl + s.totalDiv;
+    const newNet     = sc.mktAfter - totalDebt;
+    const newRetPct  = sc.costAll ? newReturn/sc.costAll*100 : null;
+    const dropPctLbl = isNow ? '現在' : (drop*100).toFixed(0) + '%';
+    const status     = isNow ? 'now' : ratioClass(sc.minRatio);
+    const colClass   = isNow ? 'now' : (hasPledge ? status : (newNet < 0 ? 'danger' : (newPnl < 0 ? 'warn' : 'safe')));
+    const tagText    = isNow ? '現況'
+                       : !hasPledge ? (newPnl >= 0 ? '✅ 仍獲利' : newReturn >= 0 ? '⚠️ 蝕本' : '🔴 虧損')
+                       : ratioLabel(sc.minRatio);
+    const tagClass   = colClass === 'now' ? 'tag-now' : colClass === 'safe' ? 'tag-safe' : colClass === 'warn' ? 'tag-warn' : 'tag-danger';
+    return `<div class="stress-col ${colClass}">
+      <div class="sc-head">${isNow ? '🎯 現況' : '📉 大盤跌 ' + (-drop*100).toFixed(0) + '%'}<span class="sc-tag ${tagClass}">${tagText}</span></div>
+      <div class="sc-big ${cls(newReturn)}">${fmtPnl(newReturn)}</div>
+      <div class="sc-row"><span class="lbl">總市值</span><span class="val">${fmtNT(sc.mktAfter)}</span></div>
+      <div class="sc-row"><span class="lbl">淨資產</span><span class="val ${cls(newNet)}">${fmtNT(newNet)}</span></div>
+      <div class="sc-row"><span class="lbl">總報酬率</span><span class="val ${cls(newReturn)}">${newRetPct!=null ? sign(newRetPct)+fmtN(newRetPct,1)+'%' : '—'}</span></div>
+      ${hasPledge ? `<div class="sc-row"><span class="lbl">最低維持率</span><span class="val ${ratioClass(sc.minRatio)==='danger'?'up':ratioClass(sc.minRatio)==='warn'?'warn':ratioClass(sc.minRatio)==='safe'?'dn':''}">${sc.minRatio!=null ? fmtN(sc.minRatio,0)+'%' : '—'}</span></div>` : ''}
+    </div>`;
+  }).join('');
+
+  // === 各筆質押維持率 ===
+  if (hasPledge) {
+    plRow.style.display = '';
+    const allCodes = [...new Set((D.pledges || []).map(p => p.code))];
+    let html = `<h4>🔒 各筆質押維持率（跌幅下）</h4>
+      <div class="stress-pledge-row header">
+        <span>股票</span>
+        <span style="text-align:right">現在</span>
+        <span style="text-align:right">-10%</span>
+        <span style="text-align:right">-20%</span>
+        <span style="text-align:right" class="pl-30">-30%</span>
+      </div>`;
+    (D.pledges || []).forEach((pl, idx) => {
+      const rowCells = scenarios.map((sc, i) => {
+        const found = sc.pledgeResults[idx];
+        const extra = i === 3 ? ' pl-30' : '';
+        if (!found || found.ratio == null) return `<span class="ratio-cell${extra}">—</span>`;
+        const cls = ratioClass(found.ratio);
+        return `<span class="ratio-cell ratio-${cls||'safe'}${extra}">${fmtN(found.ratio,0)}%</span>`;
+      });
+      const leverageBadge = LEVERAGED_ETF[pl.code] ? `<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">${LEVERAGED_ETF[pl.code]}x</span>` : '';
+      html += `<div class="stress-pledge-row">
+        <span><strong>${esc(pl.code)}</strong>${leverageBadge}</span>
+        ${rowCells[0]}
+        ${rowCells[1]}
+        ${rowCells[2]}
+        ${rowCells[3]}
+      </div>`;
+    });
+    plRow.innerHTML = html;
+  } else {
+    plRow.style.display = 'none';
+  }
+
+  // === 頂部警告橫幅 ===
+  const dangerScenarios = scenarios.filter(sc => sc.drop !== 0 && sc.minRatio != null && sc.minRatio < RATIO_WARN);
+  if (hasPledge && dangerScenarios.length) {
+    const worst = dangerScenarios.find(sc => sc.minRatio < RATIO_DANGER) || dangerScenarios[0];
+    const dangerCode = worst.pledgeResults
+      .filter(p => p.ratio != null && p.ratio < RATIO_WARN)
+      .sort((a, b) => a.ratio - b.ratio)
+      .map(p => `${p.code}(${fmtN(p.ratio,0)}%)`)
+      .join('、');
+    const level = worst.minRatio < RATIO_DANGER ? '危險' : '警示';
+    const advice = worst.minRatio < RATIO_DANGER
+      ? '建議部分還款或補質押，避免被追繳。'
+      : '已逼近警示線，留意是否需要降低槓桿。';
+    document.getElementById('stress-alert-body').innerHTML =
+      `若大盤下跌 <strong>${(-worst.drop*100).toFixed(0)}%</strong>，下列質押將進入 <strong>${level}</strong>區：<strong>${dangerCode}</strong>。${advice}`;
+    alert.style.display = '';
+  } else {
+    alert.style.display = 'none';
+  }
 }
 
 function renderPledge() {
