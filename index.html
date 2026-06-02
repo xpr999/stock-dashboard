@@ -11,42 +11,45 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  /* 莫蘭迪色系 */
-  --up:      #b85c5c;   /* 玫紅 - 漲 */
-  --dn:      #5c8c7c;   /* 蘇醒綠 - 跌 */
-  --primary: #6b7c8a;   /* 灵乾藍 */
-  --primary-dark: #4d5d6b;
-  --primary-soft: #e8ebee;
-  --secondary: #8c8470; /* 茶色 */
-  --accent:  #c4a574;   /* 黃銅 */
-  --bg:      #f5f3f0;   /* 暖白 */
-  --bg-deep: #ebe7e0;
-  --surface: #fbf9f5;   /* 卡片背景：象牙白 */
-  --border:  #e8e3db;
-  --text:    #3d3a35;   /* 深炭灰 */
-  --muted:   #8a8580;
-  --warn:    #c79a52;   /* 焦糖 */
-  --danger:  #b85c5c;   /* 玫紅 */
-  --safe:    #5c8c7c;   /* 蘇醒綠 */
-  --shadow:  0 1px 2px rgba(60,55,45,0.04), 0 4px 10px rgba(60,55,45,0.05);
-  --shadow-lg: 0 2px 8px rgba(60,55,45,0.06), 0 10px 24px rgba(60,55,45,0.08);
+  /* 活潑現代色系：清晰紅綠 + 多彩 accent */
+  --up:      #e11d48;   /* 玫紅紅 - 漲（清楚醒目但不刺眼） */
+  --dn:      #15a366;   /* 翡翠綠 - 跌（清楚醒目） */
+  --primary: #3b82f6;   /* 海洋藍 */
+  --primary-dark: #1e40af;
+  --primary-soft: #dbeafe;
+  --secondary: #14b8a6; /* 湖水綠 */
+  --accent:  #f59e0b;   /* 蜜糖橘 */
+  --pink:    #ec4899;
+  --purple:  #8b5cf6;
+  --bg:      #f6f8fb;   /* 清新冷白 */
+  --bg-deep: #eef2f7;
+  --surface: #ffffff;
+  --border:  #e2e8f0;
+  --text:    #0f172a;
+  --muted:   #64748b;
+  --warn:    #f59e0b;
+  --danger:  #e11d48;
+  --safe:    #15a366;
+  --shadow:  0 1px 2px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06);
+  --shadow-lg: 0 2px 8px rgba(15,23,42,0.06), 0 12px 28px rgba(15,23,42,0.09);
   --radius:  14px;
   --radius-sm: 8px;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   background: var(--bg); color: var(--text); font-size: 14px;
-  background-image: radial-gradient(at 20% 0%, rgba(196,165,116,0.06) 0px, transparent 55%),
-                    radial-gradient(at 80% 0%, rgba(107,124,138,0.05) 0px, transparent 55%);
+  background-image: radial-gradient(at 12% 0%, rgba(59,130,246,0.06) 0px, transparent 50%),
+                    radial-gradient(at 88% 0%, rgba(236,72,153,0.05) 0px, transparent 50%),
+                    radial-gradient(at 50% 100%, rgba(245,158,11,0.04) 0px, transparent 60%);
   background-attachment: fixed;
 }
 /* ── Header ── */
 header {
-  background: linear-gradient(135deg, #6b7c8a 0%, #8c8470 100%);
-  color: #f5f3f0;
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 70%, #14b8a6 100%);
+  color: #fff;
   padding: 12px 24px; display: flex; align-items: center;
   gap: 8px; flex-wrap: wrap;
-  box-shadow: 0 2px 12px rgba(107,124,138,0.18);
+  box-shadow: 0 2px 16px rgba(59,130,246,0.22);
   position: sticky; top: 0; z-index: 50;
 }
 .logo { font-size: 18px; font-weight: 700; margin-right: auto; white-space: nowrap; letter-spacing: 0.3px; }
@@ -69,33 +72,33 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
   margin-bottom: 16px;
 }
 .hero-card {
-  background: linear-gradient(135deg, #6b7c8a 0%, #5a6b78 60%, #4d5d6b 100%);
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 55%, #0ea5e9 100%);
   border-radius: var(--radius);
   padding: 22px 26px;
-  color: #f5f3f0;
+  color: #fff;
   box-shadow: var(--shadow-lg);
   position: relative; overflow: hidden;
 }
 .hero-card::before {
   content: ''; position: absolute; top: -40%; right: -10%;
   width: 280px; height: 280px;
-  background: radial-gradient(circle, rgba(245,243,240,0.10) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.20) 0%, transparent 70%);
   pointer-events: none;
 }
-.hero-card .hc-lbl { font-size: 12px; color: rgba(245,243,240,0.7); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 6px; position: relative; }
+.hero-card .hc-lbl { font-size: 12px; color: rgba(255,255,255,0.78); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 6px; position: relative; font-weight: 600; }
 .hero-card .hc-val { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; position: relative; }
-.hero-card .hc-sub { font-size: 13px; margin-top: 8px; opacity: 0.9; position: relative; }
-.hero-card .hc-pill { display: inline-block; padding: 3px 10px; border-radius: 99px; background: rgba(245,243,240,0.15); font-size: 12px; font-weight: 600; margin-left: 6px; }
+.hero-card .hc-sub { font-size: 13px; margin-top: 8px; opacity: 0.95; position: relative; }
+.hero-card .hc-pill { display: inline-block; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,0.18); font-size: 12px; font-weight: 600; margin-left: 6px; }
 .hero-card.alt {
-  background: linear-gradient(135deg, #a08566 0%, #8c7558 60%, #786448 100%);
+  background: linear-gradient(135deg, #db2777 0%, #f97316 55%, #f59e0b 100%);
 }
 .hero-card.alt::before {
-  background: radial-gradient(circle, rgba(245,243,240,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, transparent 70%);
 }
 .hero-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; position: relative; }
-.hero-mini { background: rgba(245,243,240,0.10); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
-.hero-mini .lbl { font-size: 11px; opacity: 0.85; }
-.hero-mini .val { font-size: 15px; font-weight: 600; margin-top: 2px; }
+.hero-mini { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.12); }
+.hero-mini .lbl { font-size: 11px; opacity: 0.9; }
+.hero-mini .val { font-size: 15px; font-weight: 700; margin-top: 2px; }
 @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero-card .hc-val { font-size: 26px; } }
 /* ── Cards ── */
 .cards {
@@ -118,11 +121,11 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
   background: var(--primary); opacity: 0.75;
 }
-.card.c-asset::after  { background: linear-gradient(180deg, #6b7c8a, #4d5d6b); }
-.card.c-pl::after     { background: linear-gradient(180deg, #b85c5c, #9a4848); }
-.card.c-div::after    { background: linear-gradient(180deg, #c4a574, #a08566); }
-.card.c-debt::after   { background: linear-gradient(180deg, #a08566, #786448); }
-.card.c-info::after   { background: linear-gradient(180deg, #7c9a96, #5c8c7c); }
+.card.c-asset::after  { background: linear-gradient(180deg, #3b82f6, #1e40af); }
+.card.c-pl::after     { background: linear-gradient(180deg, #e11d48, #be123c); }
+.card.c-div::after    { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.card.c-debt::after   { background: linear-gradient(180deg, #f97316, #c2410c); }
+.card.c-info::after   { background: linear-gradient(180deg, #14b8a6, #0f766e); }
 .card .lbl { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.2px; }
 .card .val { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
 .card .sub { font-size: 12px; margin-top: 4px; font-weight: 500; }
@@ -131,17 +134,17 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 0; padding: 0 4px; }
 .tbtn {
   padding: 10px 18px; border: none; border-radius: 10px 10px 0 0;
-  background: rgba(251,249,245,0.55); cursor: pointer; font-size: 13px; color: var(--muted);
+  background: rgba(255,255,255,0.55); cursor: pointer; font-size: 13px; color: var(--muted);
   font-weight: 500; transition: all 0.15s;
   border: 1px solid transparent; border-bottom: none;
 }
-.tbtn:hover { background: rgba(251,249,245,0.9); color: var(--text); }
+.tbtn:hover { background: rgba(255,255,255,0.9); color: var(--text); }
 .tbtn.active {
   background: var(--surface);
-  color: var(--primary-dark);
+  color: var(--primary);
   font-weight: 700;
   border-color: var(--border);
-  box-shadow: 0 -2px 8px rgba(60,55,45,0.04);
+  box-shadow: 0 -2px 8px rgba(15,23,42,0.04);
 }
 /* ── Panel ── */
 .panel {
@@ -154,19 +157,19 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 /* ── Table ── */
 .tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: #f0ede6; padding: 11px 12px; text-align: right; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border); font-size: 12px; letter-spacing: 0.2px; }
+th { background: #f1f5f9; padding: 11px 12px; text-align: right; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border); font-size: 12px; letter-spacing: 0.2px; }
 th:first-child, th:nth-child(2) { text-align: left; }
-td { padding: 10px 12px; border-top: 1px solid #f0ede6; text-align: right; white-space: nowrap; }
+td { padding: 10px 12px; border-top: 1px solid #f1f5f9; text-align: right; white-space: nowrap; }
 td:first-child, td:nth-child(2) { text-align: left; }
-tr:hover td { background: #f7f4ee; }
+tr:hover td { background: #f8fafc; }
 td.up { color: var(--up); font-weight: 600; } td.dn { color: var(--dn); font-weight: 600; }
-td.div-col { color: #a08566; font-weight: 600; }   /* 配息欄：茶色 */
-td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾藍 */
+td.div-col { color: #c026d3; font-weight: 600; }   /* 配息欄：紫紅 */
+td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 */
 .pinput { width: 80px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; text-align: right; outline: none; }
 .pinput:focus { border-color: var(--primary); }
 .updated-at { font-size: 10px; color: #9ca3af; display: block; }
-.bdel { background: none; border: 1px solid #d1aaa4; color: #8a4040; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
-.bdel:hover { background: #f0e0dc; }
+.bdel { background: none; border: 1px solid #fca5a5; color: #dc2626; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
+.bdel:hover { background: #fee2e2; }
 .empty { padding: 40px; text-align: center; color: var(--muted); }
 /* ── Form ── */
 .form-wrap { padding: 13px 16px; border-top: 2px solid var(--bg); background: #fafbfc; }
@@ -191,7 +194,7 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 /* ── Pledge ── */
 .warn { color: #c79a52; font-weight: 600; } .danger { color: var(--up); font-weight: 700; }
 /* ── Dividend summary badge ── */
-.div-badge { display: inline-block; background: #f0e8d8; color: #8a6228; border-radius: 4px; font-size: 11px; padding: 1px 5px; margin-left: 4px; }
+.div-badge { display: inline-block; background: #fae8ff; color: #a21caf; border-radius: 4px; font-size: 11px; padding: 1px 5px; margin-left: 4px; }
 /* ── Chart panel ── */
 .chart-grid {
   display: grid;
@@ -203,7 +206,7 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 .progress-section { padding: 0 20px 20px; }
 .progress-section h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 14px; }
 .price-track-wrap { position: relative; padding: 40px 0 32px; margin: 0 16px; }
-.price-track-bar { height: 10px; border-radius: 5px; background: linear-gradient(to right, #b8cdc3, #8aae9e, #5c8c7c, #c79a52, #b85c5c); position: relative; }
+.price-track-bar { height: 10px; border-radius: 5px; background: linear-gradient(to right, #d1fae5, #86efac, #34d399, #f59e0b, #ef4444); position: relative; }
 .price-marker { position: absolute; top: -32px; transform: translateX(-50%); text-align: center; }
 .price-marker .pm-label { font-size: 10px; color: var(--muted); white-space: nowrap; }
 .price-marker .pm-price { font-size: 12px; font-weight: 700; }
@@ -238,15 +241,15 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 .sector-bar { height: 6px; border-radius: 3px; }
 /* ── Trade tab ── */
 .trade-badge { display: inline-block; border-radius: 4px; font-size: 11px; padding: 2px 7px; font-weight: 600; }
-.badge-sell   { background: #f0e0dc; color: #8a4040; }
-.badge-switch { background: #e0e6ec; color: #4d5d6b; }
+.badge-sell   { background: #fee2e2; color: #b91c1c; }
+.badge-switch { background: #dbeafe; color: #1d4ed8; }
 /* ── Target Calculator ── */
 .target-box { padding: 16px 20px; }
-.target-info { background: #e3ebe7; border: 1px solid #a8c2b8; border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; }
+.target-info { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; }
 .ti-row { display: flex; gap: 32px; flex-wrap: wrap; }
 .ti-item { text-align: center; }
 .ti-lbl { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
-.ti-val { font-size: 16px; font-weight: 700; color: #3d6b5d; }
+.ti-val { font-size: 16px; font-weight: 700; color: #15803d; }
 .target-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .target-card { background: var(--surface); border-radius: var(--radius); padding: 14px; border: 2px solid var(--border); text-align: center; transition: border-color .15s; cursor: default; }
 .target-card:hover { border-color: var(--primary); }
@@ -281,12 +284,12 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 .perf-card .lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 .perf-card .val { font-size: 18px; font-weight: 700; }
 .perf-card .sub { font-size: 12px; margin-top: 3px; }
-.perf-card.highlight { background: linear-gradient(135deg, #ebeef2, #dde2e7); border-color: #c5cdd5; }
-.perf-init { background: #f0e8d8; border: 1px solid #d5c598; border-radius: var(--radius); padding: 14px 18px; margin: 0 20px 16px; }
+.perf-card.highlight { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-color: #93c5fd; }
+.perf-init { background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius); padding: 14px 18px; margin: 0 20px 16px; }
 .perf-init p { font-size: 13px; color: #92400e; margin-bottom: 10px; }
 .flow-badge { display: inline-block; border-radius: 4px; font-size: 11px; padding: 2px 7px; font-weight: 600; }
-.badge-in  { background: #e3ebe7; color: #3d6b5d; }
-.badge-out { background: #f0e0dc; color: #8a4040; }
+.badge-in  { background: #dcfce7; color: #166534; }
+.badge-out { background: #fee2e2; color: #b91c1c; }
 /* ── Activity Log Modal ── */
 .log-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 300; }
 .log-box { background: #fff; border-radius: 14px; padding: 20px; width: 94%; max-width: 560px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
@@ -301,8 +304,8 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 .swap-box { background: #fff; border-radius: 14px; padding: 24px; width: 94%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
 .swap-box h2 { font-size: 17px; margin-bottom: 16px; }
 .swap-section { margin-bottom: 14px; padding: 12px; border-radius: 8px; }
-.swap-sell { background: #f0e0dc; border: 1px solid #d1aaa4; }
-.swap-buy  { background: #e8ebee; border: 1px solid #c5cdd5; }
+.swap-sell { background: #fef2f2; border: 1px solid #fecaca; }
+.swap-buy  { background: #eff6ff; border: 1px solid #bfdbfe; }
 .swap-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
 .swap-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .swap-fg { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 80px; }
@@ -313,22 +316,22 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 .swap-btns { display: flex; gap: 8px; justify-content: flex-end; }
 /* ── Stress Test ── */
 .stress-alert {
-  background: linear-gradient(135deg, #f0e0dc 0%, #ebd8d3 100%);
-  border: 1.5px solid #c89690;
+  background: linear-gradient(135deg, #fff1f3 0%, #ffe4e8 100%);
+  border: 1.5px solid #fda4af;
   border-left: 5px solid var(--danger);
   border-radius: var(--radius);
   padding: 14px 20px;
   margin-bottom: 16px;
   display: none;
-  box-shadow: 0 2px 12px rgba(184,92,92,0.12);
-  animation: pulse-alert 3s ease-in-out infinite;
+  box-shadow: 0 2px 14px rgba(225,29,72,0.14);
+  animation: pulse-alert 2.6s ease-in-out infinite;
 }
 @keyframes pulse-alert {
-  0%, 100% { box-shadow: 0 2px 12px rgba(184,92,92,0.12); }
-  50%      { box-shadow: 0 4px 20px rgba(184,92,92,0.22); }
+  0%, 100% { box-shadow: 0 2px 14px rgba(225,29,72,0.14); }
+  50%      { box-shadow: 0 4px 22px rgba(225,29,72,0.28); }
 }
-.stress-alert .sa-title { font-size: 15px; font-weight: 700; color: #8a4040; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-.stress-alert .sa-body  { font-size: 13px; color: #6b3535; line-height: 1.6; }
+.stress-alert .sa-title { font-size: 15px; font-weight: 700; color: #be123c; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.stress-alert .sa-body  { font-size: 13px; color: #881337; line-height: 1.6; }
 .stress-panel {
   background: var(--surface);
   border-radius: var(--radius);
@@ -358,16 +361,16 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
   background: var(--surface);
   position: relative; overflow: hidden;
 }
-.stress-col.now    { background: linear-gradient(135deg, #e8ebee 0%, #dde2e7 100%); border-color: #c5cdd5; }
-.stress-col.warn   { background: linear-gradient(135deg, #f0e8d8 0%, #ebe0c8 100%); border-color: #d5c598; }
-.stress-col.danger { background: linear-gradient(135deg, #f0e0dc 0%, #ead4cf 100%); border-color: #c89690; }
-.stress-col.safe   { background: linear-gradient(135deg, #e3ebe7 0%, #d6e0db 100%); border-color: #a8c2b8; }
+.stress-col.now    { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-color: #93c5fd; }
+.stress-col.warn   { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-color: #fbbf24; }
+.stress-col.danger { background: linear-gradient(135deg, #ffe4e8 0%, #fecdd3 100%); border-color: #fda4af; }
+.stress-col.safe   { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #6ee7b7; }
 .stress-col .sc-head { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
 .stress-col .sc-tag  { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
-.tag-safe   { background: var(--safe);   color: #f5f3f0; }
-.tag-warn   { background: var(--warn);   color: #f5f3f0; }
-.tag-danger { background: var(--danger); color: #f5f3f0; }
-.tag-now    { background: var(--primary);color: #f5f3f0; }
+.tag-safe   { background: var(--safe);   color: #fff; }
+.tag-warn   { background: var(--warn);   color: #fff; }
+.tag-danger { background: var(--danger); color: #fff; }
+.tag-now    { background: var(--primary);color: #fff; }
 .stress-col .sc-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12.5px; border-top: 1px dashed rgba(60,55,45,0.08); }
 .stress-col .sc-row:first-of-type { border-top: none; padding-top: 0; }
 .stress-col .sc-row .lbl { color: var(--muted); }
@@ -378,9 +381,9 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 .stress-pledge-row { display: grid; grid-template-columns: 90px repeat(4, 1fr); gap: 8px; padding: 5px 0; font-size: 12px; align-items: center; }
 .stress-pledge-row.header { color: var(--muted); font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
 .stress-pledge-row .ratio-cell { text-align: right; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-.ratio-safe   { background: rgba(92,140,124,0.15); color: #3d6b5d; }
-.ratio-warn   { background: rgba(199,154,82,0.18); color: #8a6228; }
-.ratio-danger { background: rgba(184,92,92,0.18);  color: #8a4040; }
+.ratio-safe   { background: rgba(21,163,102,0.13); color: #047857; }
+.ratio-warn   { background: rgba(245,158,11,0.18); color: #b45309; }
+.ratio-danger { background: rgba(225,29,72,0.16);  color: #be123c; }
 @media (max-width: 900px) { .stress-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .stress-grid { grid-template-columns: 1fr; } .stress-pledge-row { grid-template-columns: 70px repeat(3, 1fr); font-size: 11px; } .stress-pledge-row .pl-30 { display: none; } }
 /* ── Responsive ── */
@@ -451,7 +454,7 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
 
   <!-- ── Secondary KPI cards ── -->
   <div class="cards">
-    <div class="card c-div"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#a08566">—</div></div>
+    <div class="card c-div"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#d97706">—</div></div>
     <div class="card c-pl"><div class="lbl">📊 未實現報酬率</div><div class="val" id="c-pnl-pct">—</div></div>
     <div class="card c-debt"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
     <div class="card c-debt"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
@@ -646,7 +649,7 @@ td.tri-col { color: #5a6b78; font-weight: 600; }   /* 含息投報率：灵乾�
       <div class="target-box">
         <!-- 持股摘要 -->
         <div class="target-info">
-          <div style="font-size:13px;font-weight:600;color:#3d6b5d;margin-bottom:10px">📊 本帳戶 0050 持股概況</div>
+          <div style="font-size:13px;font-weight:600;color:#15803d;margin-bottom:10px">📊 本帳戶 0050 持股概況</div>
           <div class="ti-row">
             <div class="ti-item"><div class="ti-lbl">持有張數</div><div class="ti-val" id="t-shares">—</div></div>
             <div class="ti-item"><div class="ti-lbl">平均成本（每股）</div><div class="ti-val" id="t-avgcost">—</div></div>
