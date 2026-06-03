@@ -8,50 +8,66 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  /* 活潑現代色系：清晰紅綠 + 多彩 accent */
-  --up:      #e11d48;   /* 玫紅紅 - 漲（清楚醒目但不刺眼） */
-  --dn:      #15a366;   /* 翡翠綠 - 跌（清楚醒目） */
-  --primary: #3b82f6;   /* 海洋藍 */
-  --primary-dark: #1e40af;
-  --primary-soft: #dbeafe;
-  --secondary: #14b8a6; /* 湖水綠 */
-  --accent:  #f59e0b;   /* 蜜糖橘 */
-  --pink:    #ec4899;
-  --purple:  #8b5cf6;
-  --bg:      #f6f8fb;   /* 清新冷白 */
-  --bg-deep: #eef2f7;
+  /* 日系 fancy 色系：sakura + 抹茶 + 和紙白 + 金箔 */
+  --up:      #e94560;   /* 紅椿 - 漲（清楚但溫柔） */
+  --dn:      #2d8e6f;   /* 抹茶 - 跌（深綠有質感） */
+  --primary: #b794d4;   /* 藤紫 */
+  --primary-dark: #8c6bb0;
+  --primary-soft: #f4ecf9;
+  --sakura:  #f8a5c2;   /* 桜 */
+  --sakura-deep: #ec7a9a;
+  --matcha:  #a8d5ba;   /* 抹茶ミルク */
+  --matcha-deep: #7cb89b;
+  --gold:    #d4a857;   /* 金箔 */
+  --champagne: #f5e6d3;
+  --lavender: #c9b8e0;
+  --sky:     #b4d8e8;
+  --peach:   #fbcfe8;
+  --bg:      #fdfaf6;   /* 和紙白 */
+  --bg-deep: #f5ede3;
   --surface: #ffffff;
-  --border:  #e2e8f0;
-  --text:    #0f172a;
-  --muted:   #64748b;
-  --warn:    #f59e0b;
-  --danger:  #e11d48;
-  --safe:    #15a366;
-  --shadow:  0 1px 2px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.06);
-  --shadow-lg: 0 2px 8px rgba(15,23,42,0.06), 0 12px 28px rgba(15,23,42,0.09);
-  --radius:  14px;
-  --radius-sm: 8px;
+  --border:  #ece4d6;
+  --text:    #3d2e3f;   /* 墨色（帶紫調） */
+  --muted:   #8a7a8c;
+  --warn:    #d4a857;   /* 金 */
+  --danger:  #e94560;
+  --safe:    #7cb89b;
+  --shadow:  0 1px 2px rgba(184,148,212,0.06), 0 4px 14px rgba(184,148,212,0.10);
+  --shadow-lg: 0 2px 10px rgba(184,148,212,0.08), 0 16px 36px rgba(184,148,212,0.14);
+  --radius:  16px;
+  --radius-sm: 10px;
 }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Hiragino Sans', 'Microsoft JhengHei', sans-serif;
   background: var(--bg); color: var(--text); font-size: 14px;
-  background-image: radial-gradient(at 12% 0%, rgba(59,130,246,0.06) 0px, transparent 50%),
-                    radial-gradient(at 88% 0%, rgba(236,72,153,0.05) 0px, transparent 50%),
-                    radial-gradient(at 50% 100%, rgba(245,158,11,0.04) 0px, transparent 60%);
+  background-image:
+    radial-gradient(at 8% 0%, rgba(248,165,194,0.18) 0px, transparent 45%),
+    radial-gradient(at 92% 5%, rgba(168,213,186,0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 30%, rgba(201,184,224,0.10) 0px, transparent 55%),
+    radial-gradient(at 85% 80%, rgba(251,207,232,0.10) 0px, transparent 50%);
   background-attachment: fixed;
 }
 /* ── Header ── */
 header {
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 70%, #14b8a6 100%);
+  background: linear-gradient(120deg, #f8a5c2 0%, #c9b8e0 40%, #b4d8e8 75%, #a8d5ba 100%);
   color: #fff;
-  padding: 12px 24px; display: flex; align-items: center;
+  padding: 14px 24px; display: flex; align-items: center;
   gap: 8px; flex-wrap: wrap;
-  box-shadow: 0 2px 16px rgba(59,130,246,0.22);
+  box-shadow: 0 4px 24px rgba(184,148,212,0.22);
   position: sticky; top: 0; z-index: 50;
+  text-shadow: 0 1px 2px rgba(95,55,90,0.12);
 }
+header::after {
+  content: ''; position: absolute; left:0; right:0; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+.logo { font-family: 'Shippori Mincho', serif; letter-spacing: 1px; }
 .logo { font-size: 18px; font-weight: 700; margin-right: auto; white-space: nowrap; letter-spacing: 0.3px; }
 .hbtn {
   padding: 6px 13px; border-radius: 8px;
@@ -72,33 +88,39 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
   margin-bottom: 16px;
 }
 .hero-card {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 55%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #f8a5c2 0%, #ec7a9a 35%, #c9b8e0 75%, #b794d4 100%);
   border-radius: var(--radius);
-  padding: 22px 26px;
+  padding: 24px 28px;
   color: #fff;
   box-shadow: var(--shadow-lg);
   position: relative; overflow: hidden;
 }
 .hero-card::before {
-  content: ''; position: absolute; top: -40%; right: -10%;
-  width: 280px; height: 280px;
-  background: radial-gradient(circle, rgba(255,255,255,0.20) 0%, transparent 70%);
+  content: ''; position: absolute; top: -45%; right: -12%;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(255,255,255,0.30) 0%, transparent 65%);
   pointer-events: none;
 }
-.hero-card .hc-lbl { font-size: 12px; color: rgba(255,255,255,0.78); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 6px; position: relative; font-weight: 600; }
-.hero-card .hc-val { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; position: relative; }
-.hero-card .hc-sub { font-size: 13px; margin-top: 8px; opacity: 0.95; position: relative; }
-.hero-card .hc-pill { display: inline-block; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,0.18); font-size: 12px; font-weight: 600; margin-left: 6px; }
+.hero-card::after {
+  content: '✦'; position: absolute; top: 16px; right: 22px;
+  font-size: 18px; color: rgba(255,255,255,0.7); pointer-events: none;
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+.hero-card .hc-lbl { font-size: 11px; color: rgba(255,255,255,0.92); letter-spacing: 2px; margin-bottom: 8px; position: relative; font-weight: 700; }
+.hero-card .hc-val { font-family: 'Shippori Mincho', serif; font-size: 34px; font-weight: 600; letter-spacing: -0.3px; position: relative; text-shadow: 0 2px 6px rgba(95,55,90,0.18); }
+.hero-card .hc-sub { font-size: 13px; margin-top: 8px; opacity: 0.95; position: relative; font-weight: 500; }
+.hero-card .hc-pill { display: inline-block; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,0.22); font-size: 12px; font-weight: 600; margin-left: 6px; }
 .hero-card.alt {
-  background: linear-gradient(135deg, #db2777 0%, #f97316 55%, #f59e0b 100%);
+  background: linear-gradient(135deg, #a8d5ba 0%, #7cb89b 40%, #b4d8e8 75%, #87c4d9 100%);
 }
 .hero-card.alt::before {
-  background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 65%);
 }
-.hero-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; position: relative; }
-.hero-mini { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.12); }
-.hero-mini .lbl { font-size: 11px; opacity: 0.9; }
-.hero-mini .val { font-size: 15px; font-weight: 700; margin-top: 2px; }
+.hero-card.alt::after { color: rgba(255,255,255,0.8); }
+.hero-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; position: relative; }
+.hero-mini { background: rgba(255,255,255,0.22); border-radius: 10px; padding: 9px 13px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); }
+.hero-mini .lbl { font-size: 11px; opacity: 0.95; letter-spacing: 0.3px; }
+.hero-mini .val { font-family: 'Shippori Mincho', serif; font-size: 15px; font-weight: 600; margin-top: 3px; }
 @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero-card .hc-val { font-size: 26px; } }
 /* ── Cards ── */
 .cards {
@@ -112,39 +134,46 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
   padding: 16px 18px;
   box-shadow: var(--shadow);
   text-align: left;
-  border: 1px solid rgba(229,231,239,0.7);
+  border: 1px solid rgba(236,228,214,0.7);
   position: relative; overflow: hidden;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.18s, box-shadow 0.18s;
 }
-.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.card::before {
+  content: ''; position: absolute; top: 0; right: 0;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle at top right, rgba(248,165,194,0.10), transparent 70%);
+  pointer-events: none;
+}
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .card::after {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--primary); opacity: 0.75;
+  background: var(--primary); opacity: 0.85;
 }
-.card.c-asset::after  { background: linear-gradient(180deg, #3b82f6, #1e40af); }
-.card.c-pl::after     { background: linear-gradient(180deg, #e11d48, #be123c); }
-.card.c-div::after    { background: linear-gradient(180deg, #f59e0b, #d97706); }
-.card.c-debt::after   { background: linear-gradient(180deg, #f97316, #c2410c); }
-.card.c-info::after   { background: linear-gradient(180deg, #14b8a6, #0f766e); }
-.card .lbl { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.2px; }
-.card .val { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+.card.c-asset::after  { background: linear-gradient(180deg, #b794d4, #8c6bb0); }
+.card.c-pl::after     { background: linear-gradient(180deg, #e94560, #b6314a); }
+.card.c-div::after    { background: linear-gradient(180deg, #d4a857, #b08840); }
+.card.c-debt::after   { background: linear-gradient(180deg, #f8a5c2, #ec7a9a); }
+.card.c-info::after   { background: linear-gradient(180deg, #a8d5ba, #7cb89b); }
+.card .lbl { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.4px; }
+.card .val { font-family: 'Shippori Mincho', serif; font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
 .card .sub { font-size: 12px; margin-top: 4px; font-weight: 500; }
 .up { color: var(--up); } .dn { color: var(--dn); }
 /* ── Tabs ── */
 .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 0; padding: 0 4px; }
 .tbtn {
-  padding: 10px 18px; border: none; border-radius: 10px 10px 0 0;
-  background: rgba(255,255,255,0.55); cursor: pointer; font-size: 13px; color: var(--muted);
-  font-weight: 500; transition: all 0.15s;
+  padding: 10px 18px; border: none; border-radius: 12px 12px 0 0;
+  background: rgba(255,255,255,0.5); cursor: pointer; font-size: 13px; color: var(--muted);
+  font-weight: 600; transition: all 0.2s;
   border: 1px solid transparent; border-bottom: none;
+  letter-spacing: 0.3px;
 }
-.tbtn:hover { background: rgba(255,255,255,0.9); color: var(--text); }
+.tbtn:hover { background: rgba(255,255,255,0.85); color: var(--primary-dark); }
 .tbtn.active {
   background: var(--surface);
-  color: var(--primary);
+  color: var(--primary-dark);
   font-weight: 700;
   border-color: var(--border);
-  box-shadow: 0 -2px 8px rgba(15,23,42,0.04);
+  box-shadow: 0 -3px 10px rgba(184,148,212,0.10);
 }
 /* ── Panel ── */
 .panel {
@@ -157,14 +186,14 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 /* ── Table ── */
 .tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: #f1f5f9; padding: 11px 12px; text-align: right; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border); font-size: 12px; letter-spacing: 0.2px; }
+th { background: #f9f3ec; padding: 12px 12px; text-align: right; font-weight: 700; color: var(--muted); white-space: nowrap; border-bottom: 1px solid var(--border); font-size: 11.5px; letter-spacing: 0.6px; }
 th:first-child, th:nth-child(2) { text-align: left; }
-td { padding: 10px 12px; border-top: 1px solid #f1f5f9; text-align: right; white-space: nowrap; }
+td { padding: 11px 12px; border-top: 1px solid #f4ece1; text-align: right; white-space: nowrap; }
 td:first-child, td:nth-child(2) { text-align: left; }
-tr:hover td { background: #f8fafc; }
+tr:hover td { background: #fdf6ef; }
 td.up { color: var(--up); font-weight: 600; } td.dn { color: var(--dn); font-weight: 600; }
-td.div-col { color: #c026d3; font-weight: 600; }   /* 配息欄：紫紅 */
-td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 */
+td.div-col { color: #b08840; font-weight: 600; }   /* 配息欄：金 */
+td.tri-col { color: #8c6bb0; font-weight: 600; }   /* 含息投報率：藤紫 */
 .pinput { width: 80px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; text-align: right; outline: none; }
 .pinput:focus { border-color: var(--primary); }
 .updated-at { font-size: 10px; color: #9ca3af; display: block; }
@@ -194,7 +223,7 @@ td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 *
 /* ── Pledge ── */
 .warn { color: #c79a52; font-weight: 600; } .danger { color: var(--up); font-weight: 700; }
 /* ── Dividend summary badge ── */
-.div-badge { display: inline-block; background: #fae8ff; color: #a21caf; border-radius: 4px; font-size: 11px; padding: 1px 5px; margin-left: 4px; }
+.div-badge { display: inline-block; background: #fdf0d8; color: #8a6228; border-radius: 4px; font-size: 11px; padding: 1px 5px; margin-left: 4px; }
 /* ── Chart panel ── */
 .chart-grid {
   display: grid;
@@ -316,37 +345,45 @@ td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 *
 .swap-btns { display: flex; gap: 8px; justify-content: flex-end; }
 /* ── Stress Test ── */
 .stress-alert {
-  background: linear-gradient(135deg, #fff1f3 0%, #ffe4e8 100%);
-  border: 1.5px solid #fda4af;
+  background: linear-gradient(135deg, #fde6ea 0%, #fbcdd3 60%, #f8a5c2 100%);
+  border: 1.5px solid #ec7a9a;
   border-left: 5px solid var(--danger);
   border-radius: var(--radius);
   padding: 14px 20px;
   margin-bottom: 16px;
   display: none;
-  box-shadow: 0 2px 14px rgba(225,29,72,0.14);
-  animation: pulse-alert 2.6s ease-in-out infinite;
+  box-shadow: 0 2px 16px rgba(233,69,96,0.14);
+  animation: pulse-alert 2.8s ease-in-out infinite;
 }
 @keyframes pulse-alert {
-  0%, 100% { box-shadow: 0 2px 14px rgba(225,29,72,0.14); }
-  50%      { box-shadow: 0 4px 22px rgba(225,29,72,0.28); }
+  0%, 100% { box-shadow: 0 2px 16px rgba(233,69,96,0.14); }
+  50%      { box-shadow: 0 4px 26px rgba(233,69,96,0.28); }
 }
-.stress-alert .sa-title { font-size: 15px; font-weight: 700; color: #be123c; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-.stress-alert .sa-body  { font-size: 13px; color: #881337; line-height: 1.6; }
+.stress-alert .sa-title { font-family: 'Shippori Mincho', serif; font-size: 16px; font-weight: 700; color: #9a2c43; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
+.stress-alert .sa-body  { font-size: 13px; color: #7a2a3a; line-height: 1.7; }
 .stress-panel {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 18px 22px;
+  padding: 20px 24px;
   margin-bottom: 18px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.stress-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #f8a5c2, #c9b8e0, #b4d8e8, #a8d5ba, #d4a857);
 }
 .stress-panel-head {
   display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
 }
 .stress-panel-head h2 {
-  font-size: 16px; font-weight: 700;
-  display: flex; align-items: center; gap: 8px;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 17px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  letter-spacing: 1.5px;
+  color: var(--primary-dark);
 }
 .stress-panel-head .sp-tip { font-size: 12px; color: var(--muted); }
 .stress-grid {
@@ -361,10 +398,10 @@ td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 *
   background: var(--surface);
   position: relative; overflow: hidden;
 }
-.stress-col.now    { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-color: #93c5fd; }
-.stress-col.warn   { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-color: #fbbf24; }
-.stress-col.danger { background: linear-gradient(135deg, #ffe4e8 0%, #fecdd3 100%); border-color: #fda4af; }
-.stress-col.safe   { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #6ee7b7; }
+.stress-col.now    { background: linear-gradient(135deg, #f4ecf9 0%, #e8d8f0 100%); border-color: #c9b8e0; }
+.stress-col.warn   { background: linear-gradient(135deg, #fdf0d8 0%, #f8e1ba 100%); border-color: #d4a857; }
+.stress-col.danger { background: linear-gradient(135deg, #fde6ea 0%, #fbcdd3 100%); border-color: #ec7a9a; }
+.stress-col.safe   { background: linear-gradient(135deg, #e8f3eb 0%, #d5e8db 100%); border-color: #a8d5ba; }
 .stress-col .sc-head { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
 .stress-col .sc-tag  { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
 .tag-safe   { background: var(--safe);   color: #fff; }
@@ -375,7 +412,7 @@ td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 *
 .stress-col .sc-row:first-of-type { border-top: none; padding-top: 0; }
 .stress-col .sc-row .lbl { color: var(--muted); }
 .stress-col .sc-row .val { font-weight: 700; }
-.stress-col .sc-big { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; margin: 6px 0 8px; }
+.stress-col .sc-big { font-family: 'Shippori Mincho', serif; font-size: 24px; font-weight: 600; letter-spacing: -0.4px; margin: 6px 0 8px; }
 .stress-pledges { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 12px; }
 .stress-pledges h4 { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
 .stress-pledge-row { display: grid; grid-template-columns: 90px repeat(4, 1fr); gap: 8px; padding: 5px 0; font-size: 12px; align-items: center; }
@@ -454,7 +491,7 @@ td.tri-col { color: #0284c7; font-weight: 600; }   /* 含息投報率：天藍 *
 
   <!-- ── Secondary KPI cards ── -->
   <div class="cards">
-    <div class="card c-div"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#d97706">—</div></div>
+    <div class="card c-div"><div class="lbl">💵 累計配息</div><div class="val" id="c-div" style="color:#b08840">—</div></div>
     <div class="card c-pl"><div class="lbl">📊 未實現報酬率</div><div class="val" id="c-pnl-pct">—</div></div>
     <div class="card c-debt"><div class="lbl">🔒 質押借款</div><div class="val" id="c-loan">NT$0</div></div>
     <div class="card c-debt"><div class="lbl">💳 信貸</div><div class="val" id="c-credit">NT$0</div></div>
