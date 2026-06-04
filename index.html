@@ -360,18 +360,18 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
 .swap-btns { display: flex; gap: 8px; justify-content: flex-end; }
 /* ── Stress Test ── */
 .stress-alert {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-left: 4px solid var(--danger);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #d97706;
   border-radius: var(--radius);
   padding: 12px 18px;
   margin-bottom: 16px;
   display: none;
   box-shadow: var(--shadow);
 }
-.stress-alert .sa-title { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.2px; }
-.stress-alert .sa-body  { font-size: 13px; color: #7f1d1d; line-height: 1.6; }
-.stress-alert .sa-body strong { color: #991b1b; }
+.stress-alert .sa-title { font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.2px; }
+.stress-alert .sa-body  { font-size: 13px; color: #78350f; line-height: 1.6; }
+.stress-alert .sa-body strong { color: #92400e; }
 .stress-panel {
   background: var(--surface);
   border-radius: var(--radius);
@@ -481,10 +481,10 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
   font-variant-numeric: tabular-nums;
 }
 .sr-card .delta { font-size: 11.5px; margin-top: 2px; font-weight: 600; opacity: 0.85; font-variant-numeric: tabular-nums; }
-.sr-card.tint-safe   { background: #ecfdf5; border-left-color: #059669; }
-.sr-card.tint-warn   { background: #fffbeb; border-left-color: #d97706; }
-.sr-card.tint-danger { background: #fef2f2; border-left-color: #dc2626; }
-.sr-card.tint-now    { background: #eff6ff; border-left-color: #1e40af; }
+.sr-card.tint-safe   { background: #fff; border-left-color: #059669; border-left-width: 4px; }
+.sr-card.tint-warn   { background: #fff; border-left-color: #d97706; border-left-width: 4px; }
+.sr-card.tint-danger { background: #fff; border-left-color: #dc2626; border-left-width: 4px; }
+.sr-card.tint-now    { background: #fff; border-left-color: #1e40af; border-left-width: 4px; }
 .stress-panel.panel-tint-danger { box-shadow: 0 1px 0 #dc2626 inset, var(--shadow); }
 .stress-panel.panel-tint-warn   { box-shadow: 0 1px 0 #d97706 inset, var(--shadow); }
 
@@ -1624,13 +1624,16 @@ function renderHeatmap() {
     const intensity = Math.min(1, Math.abs(pnl) / 40);
     let bg;
     if (isUp) {
-      const light = 95 - intensity * 50;  // 95 → 45
-      bg = `linear-gradient(135deg, hsl(0, 75%, ${light + 4}%), hsl(0, 78%, ${light - 5}%))`;
+      // 統一深紅，靠飽和度做強度；低 intensity → 暗灰紅，不會偏粉
+      const sat = 28 + intensity * 55;       // 28 → 83
+      const light = 46 - intensity * 12;     // 46 → 34
+      bg = `linear-gradient(135deg, hsl(358, ${sat}%, ${light + 3}%), hsl(355, ${sat + 5}%, ${light - 5}%))`;
     } else {
-      const light = 95 - intensity * 50;
-      bg = `linear-gradient(135deg, hsl(160, 55%, ${light + 4}%), hsl(160, 60%, ${light - 5}%))`;
+      const sat = 28 + intensity * 50;
+      const light = 38 - intensity * 8;
+      bg = `linear-gradient(135deg, hsl(160, ${sat}%, ${light + 3}%), hsl(162, ${sat + 5}%, ${light - 5}%))`;
     }
-    const dark = intensity > 0.40 ? 'dark' : 'lite';
+    const dark = 'dark';  // 永遠白字（背景永遠夠深）
     const sharePct = (item.mv / totalMV * 100).toFixed(1);
     return `<div class="heat-cell ${dark}" style="flex-grow:${item.mv}; background:${bg}" title="${item.code} · 市值 ${fmtNT(item.mv)} (${sharePct}%)">
       <div>
