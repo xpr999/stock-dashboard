@@ -83,7 +83,7 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 /* ── Hero summary ── */
 .hero {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1.25fr 1fr 0.75fr;
   gap: 16px;
   margin-bottom: 16px;
 }
@@ -121,7 +121,42 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 .hero-mini { background: rgba(255,255,255,0.22); border-radius: 10px; padding: 9px 13px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); }
 .hero-mini .lbl { font-size: 11px; opacity: 0.95; letter-spacing: 0.3px; }
 .hero-mini .val { font-family: 'Shippori Mincho', serif; font-size: 15px; font-weight: 600; margin-top: 3px; }
-@media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero-card .hc-val { font-size: 26px; } }
+.hero-spark { margin-top: 14px; height: 38px; position: relative; }
+.hero-spark svg { width: 100%; height: 100%; display: block; }
+.hero-spark:empty { display: none; }
+@media (max-width: 1100px) { .hero { grid-template-columns: 1.3fr 1fr; } .hero-gauge { grid-column: span 2; } }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero-card .hc-val { font-size: 26px; } .hero-gauge { grid-column: span 1; } }
+/* ── Health Gauge ── */
+.hero-gauge {
+  background: linear-gradient(135deg, #fff 0%, #fdfaf6 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px 16px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 2px;
+  position: relative; overflow: hidden;
+}
+.hero-gauge::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #ec7a9a 0%, #d4a857 50%, #7cb89b 100%);
+}
+.hg-title { font-size: 11px; color: var(--muted); letter-spacing: 1.6px; font-weight: 700; margin-bottom: 2px; }
+.hg-svg { width: 100%; max-width: 180px; height: auto; display: block; margin: 2px auto -4px; }
+.hg-needle-group { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: 100px 110px; }
+.hg-score {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 34px; font-weight: 700; line-height: 1; margin-top: 4px;
+  letter-spacing: -1px;
+  transition: color 0.3s;
+}
+.hg-score small { font-size: 14px; opacity: 0.55; font-weight: 500; margin-left: 1px; }
+.hg-label { font-size: 13px; font-weight: 700; letter-spacing: 1px; margin-top: 4px; }
+.hg-tip { font-size: 11px; color: var(--muted); text-align: center; margin-top: 2px; line-height: 1.45; max-width: 160px; }
+.hg-color-safe   { color: #2d8e6f; }
+.hg-color-mid    { color: #b08840; }
+.hg-color-warn   { color: #d4a857; }
+.hg-color-danger { color: var(--danger); }
 /* ── Cards ── */
 .cards {
   display: grid;
@@ -402,6 +437,168 @@ td.tri-col { color: #8c6bb0; font-weight: 600; }   /* 含息投報率：藤紫 *
 .stress-col.warn   { background: linear-gradient(135deg, #fdf0d8 0%, #f8e1ba 100%); border-color: #d4a857; }
 .stress-col.danger { background: linear-gradient(135deg, #fde6ea 0%, #fbcdd3 100%); border-color: #ec7a9a; }
 .stress-col.safe   { background: linear-gradient(135deg, #e8f3eb 0%, #d5e8db 100%); border-color: #a8d5ba; }
+/* ── Stress slider 互動式 ── */
+.stress-controls {
+  display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 16px; padding: 14px 18px;
+  background: linear-gradient(135deg, #fdfaf6 0%, #f9f3ec 100%);
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+}
+.stress-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.stress-preset {
+  padding: 6px 14px; border-radius: 99px; border: 1.5px solid var(--border);
+  background: #fff; cursor: pointer; font-weight: 700; font-size: 12px;
+  color: var(--muted); transition: all 0.18s; font-family: inherit;
+  letter-spacing: 0.3px;
+}
+.stress-preset:hover { border-color: var(--primary); color: var(--primary-dark); transform: translateY(-1px); }
+.stress-preset.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(184,148,212,0.35);
+}
+.stress-slider-wrap { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px; }
+.stress-slider-wrap .ss-label { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; letter-spacing: 0.4px; }
+.ss-value-display {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 20px; font-weight: 700; color: var(--up);
+  min-width: 64px; text-align: right;
+  transition: color 0.2s;
+}
+#stress-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  background: transparent; height: 24px; cursor: grab;
+}
+#stress-slider:active { cursor: grabbing; }
+#stress-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #a8d5ba 0%, #d4d4a8 30%, #d4a857 55%, #ec7a9a 78%, #e94560 100%);
+  height: 8px; border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(95,55,90,0.15);
+}
+#stress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, #fff, #f8f0fa);
+  border: 3px solid var(--primary);
+  margin-top: -8px;
+  box-shadow: 0 3px 10px rgba(184,148,212,0.45), 0 0 0 4px rgba(184,148,212,0.15);
+  transition: transform 0.15s;
+}
+#stress-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+#stress-slider::-moz-range-track {
+  background: linear-gradient(90deg, #a8d5ba 0%, #d4d4a8 30%, #d4a857 55%, #ec7a9a 78%, #e94560 100%);
+  height: 8px; border-radius: 4px;
+}
+#stress-slider::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, #fff, #f8f0fa);
+  border: 3px solid var(--primary);
+  box-shadow: 0 3px 10px rgba(184,148,212,0.45);
+}
+.stress-results { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.sr-card {
+  background: linear-gradient(135deg, #fdfaf6, #f9f3ec);
+  border-radius: 12px; padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  transition: background 0.3s, border-color 0.3s, transform 0.2s;
+  position: relative; overflow: hidden;
+}
+.sr-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; font-weight: 600; }
+.sr-card .big {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 22px; font-weight: 700; margin-top: 6px;
+  letter-spacing: -0.3px; transition: color 0.25s;
+}
+.sr-card .delta { font-size: 12px; margin-top: 3px; font-weight: 700; opacity: 0.85; }
+.sr-card.tint-safe   { background: linear-gradient(135deg, #f0f8f3, #d5e8db); border-color: #a8d5ba; }
+.sr-card.tint-warn   { background: linear-gradient(135deg, #fdf6e6, #f8e1ba); border-color: #d4a857; }
+.sr-card.tint-danger { background: linear-gradient(135deg, #fdf0f3, #fbcdd3); border-color: #ec7a9a; }
+.sr-card.tint-now    { background: linear-gradient(135deg, #f8f3fb, #e8d8f0); border-color: #c9b8e0; }
+.stress-panel.panel-tint-danger { box-shadow: 0 4px 24px rgba(233,69,96,0.18), var(--shadow); }
+.stress-panel.panel-tint-warn   { box-shadow: 0 4px 20px rgba(212,168,87,0.16), var(--shadow); }
+
+.stress-pledges-bars { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); }
+.stress-pledges-bars h4 { font-size: 12px; color: var(--muted); margin-bottom: 10px; font-weight: 700; letter-spacing: 0.6px; }
+.pledge-bar-row {
+  display: grid; grid-template-columns: 110px 1fr 90px;
+  gap: 14px; padding: 8px 0; align-items: center;
+}
+.pledge-bar-row .pb-code { font-weight: 700; font-size: 13px; }
+.pledge-bar-row .pb-code small { background: #fdf0d8; color: #8a6228; padding: 1px 5px; border-radius: 4px; font-size: 10px; margin-left: 4px; }
+.pledge-bar-track {
+  position: relative; background: #f4ece1;
+  border-radius: 99px; height: 20px; overflow: visible;
+  border: 1px solid var(--border);
+}
+.pledge-bar-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px; font-size: 11px; font-weight: 700;
+  color: #fff; min-width: 36px; white-space: nowrap;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+}
+.pledge-bar-fill.safe   { background: linear-gradient(90deg, #7cb89b, #5c8c7c); }
+.pledge-bar-fill.warn   { background: linear-gradient(90deg, #e6b966, #b08840); }
+.pledge-bar-fill.danger { background: linear-gradient(90deg, #ec7a9a, #c94d6d); }
+.pledge-bar-line {
+  position: absolute; top: -3px; bottom: -3px; width: 2px;
+  background: var(--danger); border-radius: 2px;
+  z-index: 2;
+}
+.pledge-bar-line::after {
+  content: attr(data-label); position: absolute; top: -16px;
+  left: 50%; transform: translateX(-50%);
+  font-size: 9px; color: var(--muted); white-space: nowrap;
+  font-weight: 600;
+}
+.pledge-bar-line.warn-line { background: var(--warn); }
+.pb-status { text-align: right; font-size: 11px; font-weight: 700; }
+.pb-status.safe   { color: #3d6b5d; }
+.pb-status.warn   { color: #8a6228; }
+.pb-status.danger { color: #9a2c43; }
+@media (max-width: 900px) {
+  .stress-results { grid-template-columns: repeat(2, 1fr); }
+  .stress-controls { padding: 12px; }
+  .stress-slider-wrap { width: 100%; }
+}
+@media (max-width: 520px) {
+  .pledge-bar-row { grid-template-columns: 80px 1fr 70px; gap: 8px; }
+}
+/* ── Holdings Heatmap ── */
+.holdings-heatmap-wrap { padding: 18px 18px 8px; border-bottom: 1px solid var(--border); }
+.hh-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hh-head h3 { font-family: 'Shippori Mincho', serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: var(--primary-dark); }
+.hh-tip { font-size: 11px; color: var(--muted); }
+.holdings-heatmap { display: flex; flex-direction: column; gap: 6px; }
+.heat-row { display: flex; gap: 6px; }
+.heat-cell {
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(95,55,90,0.06);
+  overflow: hidden;
+  position: relative;
+  cursor: default;
+  flex-basis: 0;
+}
+.heat-cell::before {
+  content: ''; position: absolute; top: 0; right: 0;
+  width: 40px; height: 40px;
+  background: radial-gradient(circle at top right, rgba(255,255,255,0.25), transparent 70%);
+}
+.heat-cell:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(95,55,90,0.18); }
+.hc-code { font-family: 'Shippori Mincho', serif; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; position: relative; }
+.hc-mv { font-size: 11px; opacity: 0.85; margin-top: 2px; position: relative; }
+.hc-pnl { font-family: 'Shippori Mincho', serif; font-size: 19px; font-weight: 700; margin-top: auto; letter-spacing: -0.3px; position: relative; }
+.heat-cell.lite { color: var(--text); }
+.heat-cell.dark { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.18); }
+@media (max-width: 600px) {
+  .heat-cell { padding: 10px 12px; }
+  .hc-code { font-size: 14px; } .hc-pnl { font-size: 16px; } .hc-mv { font-size: 10px; }
+}
 .stress-col .sc-head { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
 .stress-col .sc-tag  { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
 .tag-safe   { background: var(--safe);   color: #fff; }
@@ -477,6 +674,7 @@ td.tri-col { color: #8c6bb0; font-weight: 600; }   /* 含息投報率：藤紫 *
         <div class="hero-mini"><div class="lbl">💰 股票市值</div><div class="val" id="c-mkt">—</div></div>
         <div class="hero-mini"><div class="lbl">📊 投入成本</div><div class="val" id="c-cost">—</div></div>
       </div>
+      <div class="hero-spark" id="hero-spark-1"></div>
     </div>
     <div class="hero-card alt">
       <div class="hc-lbl">🎯 累計總報酬</div>
@@ -486,7 +684,9 @@ td.tri-col { color: #8c6bb0; font-weight: 600; }   /* 含息投報率：藤紫 *
         <div class="hero-mini"><div class="lbl">📈 未實現</div><div class="val" id="c-pnl">—</div></div>
         <div class="hero-mini"><div class="lbl">💹 已實現</div><div class="val" id="c-realized">NT$0</div></div>
       </div>
+      <div class="hero-spark" id="hero-spark-2"></div>
     </div>
+    <div class="hero-gauge" id="hero-gauge"></div>
   </div>
 
   <!-- ── Secondary KPI cards ── -->
@@ -498,14 +698,36 @@ td.tri-col { color: #8c6bb0; font-weight: 600; }   /* 含息投報率：藤紫 *
     <div class="card c-info"><div class="lbl">🎯 台股曝險</div><div class="val" id="c-exposure">—</div></div>
   </div>
 
-  <!-- ── 壓力測試面板 ── -->
+  <!-- ── 壓力測試面板（互動 slider）── -->
   <div class="stress-panel" id="stress-panel" style="display:none">
     <div class="stress-panel-head">
-      <h2>📉 大跌壓力測試</h2>
-      <div class="sp-tip">槓桿 ETF 跌幅自動加倍計算 · 維持率 &lt;140% 警示 · &lt;130% 危險</div>
+      <h2>📉 大跌壓力模擬</h2>
+      <div class="sp-tip">拖曳模擬大盤下跌幅度 · 槓桿 ETF 自動 2 倍 · &lt;140% 警示 &lt;130% 危險</div>
     </div>
-    <div class="stress-grid" id="stress-grid"></div>
-    <div class="stress-pledges" id="stress-pledges" style="display:none"></div>
+
+    <div class="stress-controls">
+      <div class="stress-presets">
+        <button class="stress-preset" data-drop="0">現在</button>
+        <button class="stress-preset" data-drop="0.10">-10%</button>
+        <button class="stress-preset" data-drop="0.20">-20%</button>
+        <button class="stress-preset" data-drop="0.30">-30%</button>
+        <button class="stress-preset" data-drop="0.40">-40%</button>
+      </div>
+      <div class="stress-slider-wrap">
+        <span class="ss-label">大盤跌幅</span>
+        <input type="range" id="stress-slider" min="0" max="50" step="1" value="20">
+        <div class="ss-value-display" id="stress-pct-label">-20%</div>
+      </div>
+    </div>
+
+    <div class="stress-results" id="stress-results">
+      <div class="sr-card sr-mkt"><div class="lbl">總市值</div><div class="big" id="ss-mkt">—</div><div class="delta" id="ss-mkt-delta"></div></div>
+      <div class="sr-card sr-net"><div class="lbl">淨資產</div><div class="big" id="ss-net">—</div><div class="delta" id="ss-net-delta"></div></div>
+      <div class="sr-card sr-total"><div class="lbl">總報酬</div><div class="big" id="ss-total">—</div><div class="delta" id="ss-total-pct"></div></div>
+      <div class="sr-card sr-ratio"><div class="lbl">最低維持率</div><div class="big" id="ss-ratio">—</div><div class="delta" id="ss-ratio-status"></div></div>
+    </div>
+
+    <div class="stress-pledges-bars" id="stress-pledges-bars"></div>
   </div>
 
   <!-- ── Tabs ── -->
@@ -523,6 +745,10 @@ td.tri-col { color: #8c6bb0; font-weight: 600; }   /* 含息投報率：藤紫 *
 
   <!-- ── 持股明細 ── -->
   <div class="panel" id="tab-portfolio">
+    <div class="holdings-heatmap-wrap">
+      <div class="hh-head"><h3>🗺️ 持股分布</h3><span class="hh-tip">方塊大小 = 市值佔比 · 顏色深淺 = 損益幅度</span></div>
+      <div class="holdings-heatmap" id="holdings-heatmap"></div>
+    </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -1141,6 +1367,7 @@ function priceFor(code) {
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
   renderSummary();
+  renderHeatmap();
   renderPortfolio();
   renderDividends();
   renderPledge();
@@ -1201,7 +1428,10 @@ function renderSummary() {
   }, 0);
   document.getElementById('c-exposure').textContent = totalExposure > 0 ? fmtNT(totalExposure) : '—';
 
-  renderStressTest({ mkt, cost, pnl, totalDiv, loan, credit, totalDebt, realizedPnl, totalReturn });
+  const summaryObj = { mkt, cost, pnl, totalDiv, loan, credit, totalDebt, realizedPnl, totalReturn };
+  renderHeroSparklines();
+  renderHealthGauge(summaryObj);
+  renderStressTest(summaryObj);
 }
 
 function renderPortfolio() {
@@ -1270,6 +1500,190 @@ function renderDividends() {
   </tr>`).join('');
 }
 
+// ── Sparkline 走勢迷你線 ────────────────────────────────────────────────────
+function svgSparkline(values, opts = {}) {
+  if (!values || values.length < 2) return '';
+  const w = 220, h = 38;
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = max - min || 1;
+  const id = 'sg' + Math.random().toString(36).slice(2, 8);
+  const pts = values.map((v, i) => [
+    (i / (values.length - 1)) * w,
+    h - 4 - ((v - min) / range) * (h - 8)
+  ]);
+  const line = pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
+  const areaPath = `M 0,${h} L ${pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' L ')} L ${w},${h} Z`;
+  const color = opts.color || 'rgba(255,255,255,0.92)';
+  const fill = opts.fill || 'rgba(255,255,255,0.22)';
+  const lastPoint = pts[pts.length - 1];
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${fill}"/>
+        <stop offset="100%" stop-color="${fill}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${areaPath}" fill="url(#${id})"/>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="${lastPoint[0].toFixed(1)}" cy="${lastPoint[1].toFixed(1)}" r="2.6" fill="${color}"/>
+  </svg>`;
+}
+
+function renderHeroSparklines() {
+  const snaps = (D.snapshots || []).slice(-30);
+  const e1 = document.getElementById('hero-spark-1');
+  const e2 = document.getElementById('hero-spark-2');
+  if (!e1 || !e2) return;
+  if (snaps.length < 2) { e1.innerHTML = ''; e2.innerHTML = ''; return; }
+  const values = snaps.map(s => s.value || 0);
+  const pnls   = snaps.map(s => (s.value || 0) - (s.cost || 0));
+  e1.innerHTML = svgSparkline(values);
+  e2.innerHTML = svgSparkline(pnls);
+}
+
+// ── 資產健康度 Gauge ─────────────────────────────────────────────────────────
+function calcHealthScore(s) {
+  let score = 100;
+  const reasons = [];
+  // 質押維持率懲罰
+  for (const pl of (D.pledges || [])) {
+    const stock = (D.portfolio || []).find(p => p.code === pl.code && p.price != null);
+    if (stock) {
+      const ratio = stock.price * pl.shares * 1000 / pl.loan * 100;
+      if (ratio < 130) { score -= 30; reasons.push(`${pl.code} 維持率 ${ratio.toFixed(0)}%`); }
+      else if (ratio < 140) { score -= 18; reasons.push(`${pl.code} 維持率近警示`); }
+      else if (ratio < 160) { score -= 7; }
+    }
+  }
+  // 槓桿率（負債/市值）
+  if (s.mkt > 0) {
+    const lev = s.totalDebt / s.mkt;
+    if (lev > 0.5) { score -= 25; reasons.push('負債/市值 > 50%'); }
+    else if (lev > 0.35) { score -= 14; reasons.push('負債/市值偏高'); }
+    else if (lev > 0.2) { score -= 5; }
+  }
+  // 集中度
+  const totalMV = (D.portfolio || []).reduce((a, x) => a + (x.price * x.shares * 1000 || 0), 0);
+  if (totalMV > 0) {
+    const top = Math.max(...D.portfolio.map(x => (x.price * x.shares * 1000 || 0) / totalMV));
+    if (top > 0.7) { score -= 12; reasons.push('單檔佔比 > 70%'); }
+    else if (top > 0.5) { score -= 5; }
+  }
+  // 未實現大跌
+  if (s.cost > 0) {
+    const pnlPct = s.pnl / s.cost * 100;
+    if (pnlPct < -20) { score -= 12; reasons.push(`未實現損益 ${pnlPct.toFixed(0)}%`); }
+    else if (pnlPct < -10) { score -= 5; }
+  }
+  return { score: Math.max(0, Math.min(100, score)), reasons };
+}
+
+function renderHealthGauge(s) {
+  const wrap = document.getElementById('hero-gauge');
+  if (!wrap) return;
+  if (!D.portfolio.length || !s.mkt) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  const { score, reasons } = calcHealthScore(s);
+  const scoreOut10 = (score / 10).toFixed(1);
+
+  // 指針：score 0 → 180°（左）, 100 → 0°（右）
+  const angleDeg = 180 - (score / 100) * 180;
+  const angleRad = angleDeg * Math.PI / 180;
+  const cx = 100, cy = 110, rNeedle = 70;
+  const tipX = cx + rNeedle * Math.cos(angleRad);
+  const tipY = cy - rNeedle * Math.sin(angleRad);
+
+  let label, levelCls, tipText;
+  if (score >= 78) { label = '✨ 穩健'; levelCls = 'hg-color-safe'; tipText = reasons.length ? reasons[0] : '結構健康，繼續保持'; }
+  else if (score >= 55) { label = '○ 一般'; levelCls = 'hg-color-mid'; tipText = reasons[0] || '尚可，留意風險集中'; }
+  else if (score >= 30) { label = '⚠ 警示'; levelCls = 'hg-color-warn'; tipText = reasons[0] || '槓桿或質押偏高'; }
+  else { label = '🔴 危險'; levelCls = 'hg-color-danger'; tipText = reasons[0] || '建議降低槓桿/質押'; }
+
+  wrap.innerHTML = `
+    <div class="hg-title">資產健康度</div>
+    <svg class="hg-svg" viewBox="0 0 200 130">
+      <defs>
+        <linearGradient id="hg-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ec7a9a"/>
+          <stop offset="50%" stop-color="#d4a857"/>
+          <stop offset="100%" stop-color="#7cb89b"/>
+        </linearGradient>
+      </defs>
+      <path d="M 22 110 A 78 78 0 0 1 178 110" stroke="#f0e7d8" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M 22 110 A 78 78 0 0 1 178 110" stroke="url(#hg-arc-grad)" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.9"/>
+      <line x1="${cx}" y1="${cy}" x2="${tipX.toFixed(2)}" y2="${tipY.toFixed(2)}" stroke="#3d2e3f" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="7" fill="#3d2e3f"/>
+      <circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/>
+    </svg>
+    <div class="hg-score ${levelCls}">${scoreOut10}<small>/10</small></div>
+    <div class="hg-label ${levelCls}">${label}</div>
+    <div class="hg-tip">${esc(tipText)}</div>
+  `;
+}
+
+// ── 持股 Heatmap ───────────────────────────────────────────────────────────────
+function renderHeatmap() {
+  const wrap = document.getElementById('holdings-heatmap');
+  if (!wrap) return;
+  const items = (D.portfolio || [])
+    .filter(s => s.price != null && s.shares > 0)
+    .map(s => {
+      const mv = s.price * s.shares * 1000;
+      const pnlPct = s.cost ? (s.price - s.cost) / s.cost * 100 : 0;
+      return { code: s.code, mv, pnlPct };
+    })
+    .sort((a, b) => b.mv - a.mv);
+
+  if (!items.length) { wrap.innerHTML = ''; document.querySelector('.holdings-heatmap-wrap').style.display = 'none'; return; }
+  document.querySelector('.holdings-heatmap-wrap').style.display = '';
+
+  const totalMV = items.reduce((s, x) => s + x.mv, 0);
+
+  // 把項目分成 1~3 列，每列總和盡量平均
+  const rowCount = items.length <= 2 ? 1 : items.length <= 5 ? 2 : 3;
+  const rows = Array.from({ length: rowCount }, () => ({ items: [], sum: 0 }));
+  // 貪婪：每次把最大的項目放進當前 sum 最小的列
+  for (const item of items) {
+    rows.sort((a, b) => a.sum - b.sum);
+    rows[0].items.push(item);
+    rows[0].sum += item.mv;
+  }
+  // 排序回最大列在前
+  rows.sort((a, b) => b.sum - a.sum);
+
+  const cellHtml = item => {
+    const pnl = item.pnlPct;
+    const isUp = pnl >= 0;
+    const intensity = Math.min(1, Math.abs(pnl) / 40);
+    // 漲(紅) / 跌(綠)：飽和度依強度
+    let bg;
+    if (isUp) {
+      const light = 88 - intensity * 38;  // 88 → 50
+      bg = `linear-gradient(135deg, hsl(350, 75%, ${light + 6}%), hsl(348, 80%, ${light - 4}%))`;
+    } else {
+      const light = 88 - intensity * 35;
+      bg = `linear-gradient(135deg, hsl(155, 35%, ${light + 6}%), hsl(158, 42%, ${light - 4}%))`;
+    }
+    const dark = intensity > 0.35 ? 'dark' : 'lite';
+    const sharePct = (item.mv / totalMV * 100).toFixed(1);
+    return `<div class="heat-cell ${dark}" style="flex-grow:${item.mv}; background:${bg}" title="${item.code} · 市值 ${fmtNT(item.mv)} (${sharePct}%)">
+      <div>
+        <div class="hc-code">${esc(item.code)}</div>
+        <div class="hc-mv">${fmtNT(item.mv)} · ${sharePct}%</div>
+      </div>
+      <div class="hc-pnl">${sign(pnl)}${pnl.toFixed(1)}%</div>
+    </div>`;
+  };
+
+  // 行高依列數動態調整
+  const rowHeight = rowCount === 1 ? 120 : rowCount === 2 ? 95 : 80;
+  wrap.innerHTML = rows
+    .filter(r => r.items.length)
+    .map(r => `<div class="heat-row" style="height:${rowHeight}px">${r.items.map(cellHtml).join('')}</div>`)
+    .join('');
+}
+
 // ── 壓力測試 ───────────────────────────────────────────────────────────────────
 const STRESS_DROPS = [0, -0.10, -0.20, -0.30]; // 0 = 現況
 const LEVERAGED_ETF = { '00631L': 2, '00663L': 2, '00685L': 2 }; // 槓桿倍數
@@ -1318,99 +1732,166 @@ function ratioLabel(r) {
   return '✅ 安全';
 }
 
+let _stressUIInited = false;
+let _stressBaseline = null;
+
 function renderStressTest(s) {
   const panel = document.getElementById('stress-panel');
   const alert = document.getElementById('stress-alert');
-  const grid  = document.getElementById('stress-grid');
-  const plRow = document.getElementById('stress-pledges');
 
-  // 沒有持股或沒有報價 → 隱藏面板
   if (!D.portfolio.length || !s.mkt) {
     panel.style.display = 'none';
     alert.style.display = 'none';
     return;
   }
-
   panel.style.display = '';
+  _stressBaseline = s;
 
-  const scenarios = STRESS_DROPS.map(d => calcStressScenario(d));
-  const hasPledge = (D.pledges || []).length > 0;
-  const totalDebt = s.totalDebt;
-
-  // === 主格子 ===
-  grid.innerHTML = scenarios.map((sc, i) => {
-    const drop = sc.drop;
-    const isNow = drop === 0;
-    const newPnl     = sc.mktAfter - sc.costAll;
-    const newReturn  = newPnl + s.realizedPnl + s.totalDiv;
-    const newNet     = sc.mktAfter - totalDebt;
-    const newRetPct  = sc.costAll ? newReturn/sc.costAll*100 : null;
-    const dropPctLbl = isNow ? '現在' : (drop*100).toFixed(0) + '%';
-    const status     = isNow ? 'now' : ratioClass(sc.minRatio);
-    const colClass   = isNow ? 'now' : (hasPledge ? status : (newNet < 0 ? 'danger' : (newPnl < 0 ? 'warn' : 'safe')));
-    const tagText    = isNow ? '現況'
-                       : !hasPledge ? (newPnl >= 0 ? '✅ 仍獲利' : newReturn >= 0 ? '⚠️ 蝕本' : '🔴 虧損')
-                       : ratioLabel(sc.minRatio);
-    const tagClass   = colClass === 'now' ? 'tag-now' : colClass === 'safe' ? 'tag-safe' : colClass === 'warn' ? 'tag-warn' : 'tag-danger';
-    return `<div class="stress-col ${colClass}">
-      <div class="sc-head">${isNow ? '🎯 現況' : '📉 大盤跌 ' + (-drop*100).toFixed(0) + '%'}<span class="sc-tag ${tagClass}">${tagText}</span></div>
-      <div class="sc-big ${cls(newReturn)}">${fmtPnl(newReturn)}</div>
-      <div class="sc-row"><span class="lbl">總市值</span><span class="val">${fmtNT(sc.mktAfter)}</span></div>
-      <div class="sc-row"><span class="lbl">淨資產</span><span class="val ${cls(newNet)}">${fmtNT(newNet)}</span></div>
-      <div class="sc-row"><span class="lbl">總報酬率</span><span class="val ${cls(newReturn)}">${newRetPct!=null ? sign(newRetPct)+fmtN(newRetPct,1)+'%' : '—'}</span></div>
-      ${hasPledge ? `<div class="sc-row"><span class="lbl">最低維持率</span><span class="val ${ratioClass(sc.minRatio)==='danger'?'up':ratioClass(sc.minRatio)==='warn'?'warn':ratioClass(sc.minRatio)==='safe'?'dn':''}">${sc.minRatio!=null ? fmtN(sc.minRatio,0)+'%' : '—'}</span></div>` : ''}
-    </div>`;
-  }).join('');
-
-  // === 各筆質押維持率 ===
-  if (hasPledge) {
-    plRow.style.display = '';
-    const allCodes = [...new Set((D.pledges || []).map(p => p.code))];
-    let html = `<h4>🔒 各筆質押維持率（跌幅下）</h4>
-      <div class="stress-pledge-row header">
-        <span>股票</span>
-        <span style="text-align:right">現在</span>
-        <span style="text-align:right">-10%</span>
-        <span style="text-align:right">-20%</span>
-        <span style="text-align:right" class="pl-30">-30%</span>
-      </div>`;
-    (D.pledges || []).forEach((pl, idx) => {
-      const rowCells = scenarios.map((sc, i) => {
-        const found = sc.pledgeResults[idx];
-        const extra = i === 3 ? ' pl-30' : '';
-        if (!found || found.ratio == null) return `<span class="ratio-cell${extra}">—</span>`;
-        const cls = ratioClass(found.ratio);
-        return `<span class="ratio-cell ratio-${cls||'safe'}${extra}">${fmtN(found.ratio,0)}%</span>`;
-      });
-      const leverageBadge = LEVERAGED_ETF[pl.code] ? `<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">${LEVERAGED_ETF[pl.code]}x</span>` : '';
-      html += `<div class="stress-pledge-row">
-        <span><strong>${esc(pl.code)}</strong>${leverageBadge}</span>
-        ${rowCells[0]}
-        ${rowCells[1]}
-        ${rowCells[2]}
-        ${rowCells[3]}
-      </div>`;
-    });
-    plRow.innerHTML = html;
-  } else {
-    plRow.style.display = 'none';
+  if (!_stressUIInited) {
+    setupStressUI();
+    _stressUIInited = true;
   }
 
-  // === 頂部警告橫幅 ===
-  const dangerScenarios = scenarios.filter(sc => sc.drop !== 0 && sc.minRatio != null && sc.minRatio < RATIO_WARN);
-  if (hasPledge && dangerScenarios.length) {
-    const worst = dangerScenarios.find(sc => sc.minRatio < RATIO_DANGER) || dangerScenarios[0];
-    const dangerCode = worst.pledgeResults
+  // 套用目前 slider 數值
+  const slider = document.getElementById('stress-slider');
+  const drop = parseFloat(slider.value) / 100;
+  applyStress(drop);
+
+  // 頂部警告橫幅：以 -10% 為觸發條件
+  updateStressAlert();
+}
+
+function setupStressUI() {
+  const slider = document.getElementById('stress-slider');
+  slider.addEventListener('input', e => {
+    const drop = parseFloat(e.target.value) / 100;
+    applyStress(drop);
+    syncPresetActive(drop);
+  });
+  document.querySelectorAll('.stress-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const drop = parseFloat(btn.dataset.drop);
+      slider.value = Math.round(drop * 100);
+      applyStress(drop);
+      syncPresetActive(drop);
+    });
+  });
+}
+
+function syncPresetActive(drop) {
+  document.querySelectorAll('.stress-preset').forEach(btn => {
+    btn.classList.toggle('active', Math.abs(parseFloat(btn.dataset.drop) - drop) < 0.005);
+  });
+}
+
+function applyStress(drop) {
+  if (!_stressBaseline) return;
+  const s = _stressBaseline;
+  const sc = calcStressScenario(-drop);
+  const newPnl    = sc.mktAfter - sc.costAll;
+  const newReturn = newPnl + s.realizedPnl + s.totalDiv;
+  const newNet    = sc.mktAfter - s.totalDebt;
+  const newRetPct = sc.costAll ? newReturn/sc.costAll*100 : null;
+  const baseNet   = s.mkt - s.totalDebt;
+  const mktDelta  = s.mkt ? (sc.mktAfter - s.mkt) / s.mkt * 100 : 0;
+  const netDelta  = baseNet ? (newNet - baseNet) / Math.abs(baseNet) * 100 : 0;
+  const totalDelta= s.totalReturn ? (newReturn - s.totalReturn) / Math.abs(s.totalReturn) * 100 : 0;
+  const hasPledge = (D.pledges || []).length > 0;
+
+  // Slider 顯示文字
+  const pctLbl = document.getElementById('stress-pct-label');
+  pctLbl.textContent = drop === 0 ? '現在' : '-' + (drop*100).toFixed(0) + '%';
+  pctLbl.style.color = drop >= 0.30 ? 'var(--danger)' : drop >= 0.15 ? 'var(--warn)' : drop > 0 ? '#c94d6d' : 'var(--primary-dark)';
+
+  // 結果卡
+  document.getElementById('ss-mkt').textContent = fmtNT(sc.mktAfter);
+  const ssNet = document.getElementById('ss-net');
+  ssNet.textContent = fmtNT(newNet);
+  ssNet.style.color = newNet < 0 ? 'var(--up)' : '';
+  const ssTotal = document.getElementById('ss-total');
+  ssTotal.textContent = fmtPnl(newReturn);
+  ssTotal.style.color = newReturn > 0 ? 'var(--up)' : newReturn < 0 ? 'var(--dn)' : '';
+
+  const mktDeltaEl = document.getElementById('ss-mkt-delta');
+  mktDeltaEl.textContent = drop === 0 ? '基準' : '▼ ' + (-mktDelta).toFixed(1) + '%';
+  mktDeltaEl.style.color = drop === 0 ? 'var(--muted)' : 'var(--up)';
+  const netDeltaEl = document.getElementById('ss-net-delta');
+  netDeltaEl.textContent = drop === 0 ? '基準' : (netDelta >= 0 ? '▲ ' : '▼ ') + Math.abs(netDelta).toFixed(1) + '%';
+  netDeltaEl.style.color = drop === 0 ? 'var(--muted)' : 'var(--up)';
+  document.getElementById('ss-total-pct').textContent = newRetPct != null ? sign(newRetPct) + fmtN(newRetPct, 1) + '%' : '—';
+  document.getElementById('ss-total-pct').style.color = newReturn > 0 ? 'var(--up)' : newReturn < 0 ? 'var(--dn)' : 'var(--muted)';
+
+  // 最低維持率卡
+  const ratioCard = document.querySelector('.sr-ratio');
+  if (hasPledge) {
+    ratioCard.style.display = '';
+    const ssRatio = document.getElementById('ss-ratio');
+    ssRatio.textContent = sc.minRatio != null ? fmtN(sc.minRatio, 0) + '%' : '—';
+    const cls2 = ratioClass(sc.minRatio);
+    ssRatio.style.color = cls2 === 'danger' ? 'var(--danger)' : cls2 === 'warn' ? 'var(--warn)' : 'var(--safe)';
+    document.getElementById('ss-ratio-status').textContent = ratioLabel(sc.minRatio);
+    ratioCard.classList.remove('tint-safe','tint-warn','tint-danger','tint-now');
+    ratioCard.classList.add('tint-' + (cls2 || 'safe'));
+  } else {
+    ratioCard.style.display = 'none';
+  }
+
+  // 整體 panel tint：依最低維持率（有質押）或損益（無質押）
+  const overall = drop === 0 ? 'now' : (hasPledge ? ratioClass(sc.minRatio) : (newReturn < 0 ? 'danger' : newPnl < 0 ? 'warn' : 'safe'));
+  document.getElementById('stress-panel').classList.remove('panel-tint-now','panel-tint-safe','panel-tint-warn','panel-tint-danger');
+  document.getElementById('stress-panel').classList.add('panel-tint-' + (overall || 'safe'));
+
+  // 質押 bar
+  renderPledgeBars(sc);
+}
+
+function renderPledgeBars(sc) {
+  const wrap = document.getElementById('stress-pledges-bars');
+  if (!D.pledges.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const html = '<h4>🔒 各筆質押維持率</h4>' +
+    D.pledges.map((pl, i) => {
+      const r = sc.pledgeResults[i];
+      const leverageTag = LEVERAGED_ETF[pl.code] ? `<small>${LEVERAGED_ETF[pl.code]}x</small>` : '';
+      if (!r || r.ratio == null) {
+        return `<div class="pledge-bar-row">
+          <span class="pb-code">${esc(pl.code)}${leverageTag}</span>
+          <div class="pledge-bar-track"></div>
+          <span class="pb-status">—</span>
+        </div>`;
+      }
+      const cls2 = ratioClass(r.ratio);
+      // bar 滿格定義為 200%；130/140 警示線位置：65%/70%
+      const width = Math.max(2, Math.min(100, r.ratio / 200 * 100));
+      return `<div class="pledge-bar-row">
+        <span class="pb-code">${esc(pl.code)}${leverageTag}</span>
+        <div class="pledge-bar-track">
+          <div class="pledge-bar-fill ${cls2||'safe'}" style="width:${width}%">${fmtN(r.ratio,0)}%</div>
+          <div class="pledge-bar-line" style="left:65%" data-label="130%"></div>
+          <div class="pledge-bar-line warn-line" style="left:70%" data-label="140%"></div>
+        </div>
+        <span class="pb-status ${cls2||'safe'}">${ratioLabel(r.ratio)}</span>
+      </div>`;
+    }).join('');
+  wrap.innerHTML = html;
+}
+
+function updateStressAlert() {
+  const alert = document.getElementById('stress-alert');
+  if (!D.pledges.length) { alert.style.display = 'none'; return; }
+  const sc10 = calcStressScenario(-0.10);
+  if (sc10.minRatio != null && sc10.minRatio < RATIO_WARN) {
+    const dangerous = sc10.pledgeResults
       .filter(p => p.ratio != null && p.ratio < RATIO_WARN)
       .sort((a, b) => a.ratio - b.ratio)
-      .map(p => `${p.code}(${fmtN(p.ratio,0)}%)`)
+      .map(p => `${p.code}(${fmtN(p.ratio, 0)}%)`)
       .join('、');
-    const level = worst.minRatio < RATIO_DANGER ? '危險' : '警示';
-    const advice = worst.minRatio < RATIO_DANGER
-      ? '建議部分還款或補質押，避免被追繳。'
+    const level = sc10.minRatio < RATIO_DANGER ? '危險' : '警示';
+    const advice = sc10.minRatio < RATIO_DANGER
+      ? '建議部分還款或補質押，避免追繳。'
       : '已逼近警示線，留意是否需要降低槓桿。';
     document.getElementById('stress-alert-body').innerHTML =
-      `若大盤下跌 <strong>${(-worst.drop*100).toFixed(0)}%</strong>，下列質押將進入 <strong>${level}</strong>區：<strong>${dangerCode}</strong>。${advice}`;
+      `若大盤下跌 <strong>10%</strong>，下列質押將進入 <strong>${level}</strong>區：<strong>${dangerous}</strong>。${advice}`;
     alert.style.display = '';
   } else {
     alert.style.display = 'none';
