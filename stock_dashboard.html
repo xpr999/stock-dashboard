@@ -392,22 +392,6 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
   color: var(--text);
 }
 .stress-panel-head .sp-tip { font-size: 12px; color: var(--muted); }
-.stress-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-.stress-col {
-  border-radius: 12px;
-  padding: 14px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  position: relative; overflow: hidden;
-}
-.stress-col.now    { background: linear-gradient(135deg, #f4ecf9 0%, #e8d8f0 100%); border-color: #c9b8e0; }
-.stress-col.warn   { background: linear-gradient(135deg, #fdf0d8 0%, #f8e1ba 100%); border-color: #d4a857; }
-.stress-col.danger { background: linear-gradient(135deg, #fde6ea 0%, #fbcdd3 100%); border-color: #ec7a9a; }
-.stress-col.safe   { background: linear-gradient(135deg, #e8f3eb 0%, #d5e8db 100%); border-color: #a8d5ba; }
 /* ── Stress slider 互動式 ── */
 .stress-controls {
   display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
@@ -565,27 +549,6 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
   .heat-cell { padding: 10px 12px; }
   .hc-code { font-size: 14px; } .hc-pnl { font-size: 16px; } .hc-mv { font-size: 10px; }
 }
-.stress-col .sc-head { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
-.stress-col .sc-tag  { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
-.tag-safe   { background: var(--safe);   color: #fff; }
-.tag-warn   { background: var(--warn);   color: #fff; }
-.tag-danger { background: var(--danger); color: #fff; }
-.tag-now    { background: var(--primary);color: #fff; }
-.stress-col .sc-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12.5px; border-top: 1px dashed rgba(60,55,45,0.08); }
-.stress-col .sc-row:first-of-type { border-top: none; padding-top: 0; }
-.stress-col .sc-row .lbl { color: var(--muted); }
-.stress-col .sc-row .val { font-weight: 700; }
-.stress-col .sc-big { font-family: 'Shippori Mincho', serif; font-size: 24px; font-weight: 600; letter-spacing: -0.4px; margin: 6px 0 8px; }
-.stress-pledges { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 12px; }
-.stress-pledges h4 { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
-.stress-pledge-row { display: grid; grid-template-columns: 90px repeat(4, 1fr); gap: 8px; padding: 5px 0; font-size: 12px; align-items: center; }
-.stress-pledge-row.header { color: var(--muted); font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
-.stress-pledge-row .ratio-cell { text-align: right; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-.ratio-safe   { background: rgba(21,163,102,0.13); color: #047857; }
-.ratio-warn   { background: rgba(245,158,11,0.18); color: #b45309; }
-.ratio-danger { background: rgba(225,29,72,0.16);  color: #be123c; }
-@media (max-width: 900px) { .stress-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 520px) { .stress-grid { grid-template-columns: 1fr; } .stress-pledge-row { grid-template-columns: 70px repeat(3, 1fr); font-size: 11px; } .stress-pledge-row .pl-30 { display: none; } }
 /* ── Responsive ── */
 @media (max-width: 700px) {
   .chart-grid { grid-template-columns: 1fr; }
