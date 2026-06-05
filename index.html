@@ -143,6 +143,12 @@ main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 .hg-color-mid    { color: #d97706; }
 .hg-color-warn   { color: #d97706; }
 .hg-color-danger { color: var(--danger); }
+.hg-bars { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.hg-bar-row { display: grid; grid-template-columns: 56px 1fr 42px; gap: 8px; align-items: center; font-size: 10.5px; }
+.hgbr-lbl { color: var(--muted); font-weight: 600; letter-spacing: 0.2px; }
+.hgbr-track { background: #f1f5f9; height: 6px; border-radius: 3px; overflow: hidden; }
+.hgbr-fill { height: 100%; border-radius: 3px; transition: width 0.4s, background 0.3s; }
+.hgbr-val { font-family: var(--num); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); text-align: right; }
 /* ── Cards ── */
 .cards {
   display: grid;
@@ -1471,40 +1477,78 @@ function renderHeroSparklines() {
 }
 
 // ── 資產健康度 Gauge ─────────────────────────────────────────────────────────
+// 三個指標（對槓桿投資人最關鍵）：
+//   1. 追繳緩衝 (40 分)：到 130% 追繳線還能跌多少%，<=0 拿 0 分
+//   2. 利息覆蓋率 (30 分)：年配息 / 年利息，1.5x 滿分
+//   3. 槓桿比 (30 分)：負債/市值，<=10% 滿分、>=60% 0 分
 function calcHealthScore(s) {
-  let score = 100;
+  const pledges = D.pledges || [];
+  const credits = D.creditLoans || [];
+  const breakdown = { pledge: 0, interest: 0, leverage: 0 };
   const reasons = [];
-  // 質押維持率懲罰
-  for (const pl of (D.pledges || [])) {
-    const stock = (D.portfolio || []).find(p => p.code === pl.code && p.price != null);
-    if (stock) {
+  let dropToMargin = null;
+
+  // 1. 追繳緩衝 (40 分)
+  if (pledges.length) {
+    let minBuffer = Infinity; // 到追繳還能跌的 %
+    for (const pl of pledges) {
+      const stock = (D.portfolio || []).find(p => p.code === pl.code && p.price != null);
+      if (!stock) continue;
       const ratio = stock.price * pl.shares * 1000 / pl.loan * 100;
-      if (ratio < 130) { score -= 30; reasons.push(`${pl.code} 維持率 ${ratio.toFixed(0)}%`); }
-      else if (ratio < 140) { score -= 18; reasons.push(`${pl.code} 維持率近警示`); }
-      else if (ratio < 160) { score -= 7; }
+      // 還能跌 X% → 維持率變 130%
+      // ratio * (1 - X) = 130 → X = 1 - 130/ratio
+      const leverage = LEVERAGED_ETF[pl.code] || 1;
+      const buf = ratio > 130 ? (1 - 130 / ratio) * 100 / leverage : 0;
+      if (buf < minBuffer) { minBuffer = buf; dropToMargin = { code: pl.code, ratio, buf }; }
     }
-  }
-  // 槓桿率（負債/市值）
-  if (s.mkt > 0) {
+    if (isFinite(minBuffer)) {
+      // buf 0% → 0 分，30% → 40 分（線性）
+      breakdown.pledge = Math.min(40, Math.max(0, minBuffer / 30 * 40));
+      if (dropToMargin.ratio <= 130) {
+        reasons.push(`${dropToMargin.code} 維持率 ${dropToMargin.ratio.toFixed(0)}% 已低於追繳線`);
+      } else if (minBuffer < 10) {
+        reasons.push(`${dropToMargin.code} 再跌 ${minBuffer.toFixed(1)}% 觸發追繳`);
+      } else if (minBuffer < 20) {
+        reasons.push(`${dropToMargin.code} 追繳緩衝僅 ${minBuffer.toFixed(0)}%`);
+      }
+    } else { breakdown.pledge = 40; }
+  } else { breakdown.pledge = 40; }
+
+  // 2. 利息覆蓋率 (30 分)
+  const annualInterest =
+    pledges.reduce((a, p) => a + p.loan * (p.rate || 0) / 100, 0) +
+    credits.reduce((a, c) => a + c.amount * (c.rate || 0) / 100, 0);
+  if (annualInterest > 0) {
+    // 過去 12 個月配息
+    const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 12);
+    const cutoffStr = cutoff.toISOString().slice(0, 7);
+    const annualDiv = (D.dividends || [])
+      .filter(d => d.date && d.date >= cutoffStr)
+      .reduce((a, d) => a + (d.amount || 0), 0);
+    const coverage = annualDiv / annualInterest;
+    breakdown.interest = Math.min(30, Math.max(0, coverage / 1.5 * 30));
+    if (coverage < 1) reasons.push(`配息僅覆蓋利息 ${(coverage * 100).toFixed(0)}%`);
+  } else { breakdown.interest = 30; }
+
+  // 3. 槓桿比 (30 分)
+  if (s.mkt > 0 && s.totalDebt > 0) {
     const lev = s.totalDebt / s.mkt;
-    if (lev > 0.5) { score -= 25; reasons.push('負債/市值 > 50%'); }
-    else if (lev > 0.35) { score -= 14; reasons.push('負債/市值偏高'); }
-    else if (lev > 0.2) { score -= 5; }
-  }
-  // 集中度
-  const totalMV = (D.portfolio || []).reduce((a, x) => a + (x.price * x.shares * 1000 || 0), 0);
-  if (totalMV > 0) {
-    const top = Math.max(...D.portfolio.map(x => (x.price * x.shares * 1000 || 0) / totalMV));
-    if (top > 0.7) { score -= 12; reasons.push('單檔佔比 > 70%'); }
-    else if (top > 0.5) { score -= 5; }
-  }
-  // 未實現大跌
-  if (s.cost > 0) {
-    const pnlPct = s.pnl / s.cost * 100;
-    if (pnlPct < -20) { score -= 12; reasons.push(`未實現損益 ${pnlPct.toFixed(0)}%`); }
-    else if (pnlPct < -10) { score -= 5; }
-  }
-  return { score: Math.max(0, Math.min(100, score)), reasons };
+    // 10% 滿分、60% 0 分
+    breakdown.leverage = Math.min(30, Math.max(0, (0.6 - lev) / 0.5 * 30));
+    if (lev > 0.4) reasons.push(`負債/市值 ${(lev * 100).toFixed(0)}%`);
+  } else { breakdown.leverage = 30; }
+
+  const score = breakdown.pledge + breakdown.interest + breakdown.leverage;
+  return {
+    score: Math.round(Math.max(0, Math.min(100, score))),
+    reasons,
+    breakdown: {
+      pledge:   Math.round(breakdown.pledge),
+      interest: Math.round(breakdown.interest),
+      leverage: Math.round(breakdown.leverage),
+    },
+    dropToMargin
+  };
 }
 
 function renderHealthGauge(s) {
@@ -1513,7 +1557,7 @@ function renderHealthGauge(s) {
   if (!D.portfolio.length || !s.mkt) { wrap.style.display = 'none'; return; }
   wrap.style.display = '';
 
-  const { score, reasons } = calcHealthScore(s);
+  const { score, reasons, breakdown, dropToMargin } = calcHealthScore(s);
   const scoreOut10 = (score / 10).toFixed(1);
 
   // 指針：score 0 → 180°（左）, 100 → 0°（右）
@@ -1524,30 +1568,47 @@ function renderHealthGauge(s) {
   const tipY = cy - rNeedle * Math.sin(angleRad);
 
   let label, levelCls, tipText;
-  if (score >= 78) { label = '✨ 穩健'; levelCls = 'hg-color-safe'; tipText = reasons.length ? reasons[0] : '結構健康，繼續保持'; }
-  else if (score >= 55) { label = '○ 一般'; levelCls = 'hg-color-mid'; tipText = reasons[0] || '尚可，留意風險集中'; }
+  if (score >= 78) { label = '✨ 穩健'; levelCls = 'hg-color-safe'; tipText = reasons[0] || '結構健康'; }
+  else if (score >= 55) { label = '○ 一般'; levelCls = 'hg-color-mid'; tipText = reasons[0] || '尚可，留意風險'; }
   else if (score >= 30) { label = '⚠ 警示'; levelCls = 'hg-color-warn'; tipText = reasons[0] || '槓桿或質押偏高'; }
   else { label = '🔴 危險'; levelCls = 'hg-color-danger'; tipText = reasons[0] || '建議降低槓桿/質押'; }
+
+  // 3 條 breakdown bar
+  const items = [
+    { key: '追繳緩衝', score: breakdown.pledge, max: 40 },
+    { key: '利息覆蓋', score: breakdown.interest, max: 30 },
+    { key: '槓桿水位', score: breakdown.leverage, max: 30 },
+  ];
+  const barsHtml = items.map(it => {
+    const pct = it.max ? it.score / it.max * 100 : 0;
+    const color = pct >= 75 ? '#059669' : pct >= 50 ? '#d97706' : '#dc2626';
+    return `<div class="hg-bar-row">
+      <span class="hgbr-lbl">${it.key}</span>
+      <div class="hgbr-track"><div class="hgbr-fill" style="width:${pct.toFixed(0)}%;background:${color}"></div></div>
+      <span class="hgbr-val">${it.score}/${it.max}</span>
+    </div>`;
+  }).join('');
 
   wrap.innerHTML = `
     <div class="hg-title">資產健康度</div>
     <svg class="hg-svg" viewBox="0 0 200 130">
       <defs>
         <linearGradient id="hg-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#ec7a9a"/>
-          <stop offset="50%" stop-color="#d4a857"/>
-          <stop offset="100%" stop-color="#7cb89b"/>
+          <stop offset="0%" stop-color="#dc2626"/>
+          <stop offset="50%" stop-color="#d97706"/>
+          <stop offset="100%" stop-color="#059669"/>
         </linearGradient>
       </defs>
-      <path d="M 22 110 A 78 78 0 0 1 178 110" stroke="#f0e7d8" stroke-width="14" fill="none" stroke-linecap="round"/>
-      <path d="M 22 110 A 78 78 0 0 1 178 110" stroke="url(#hg-arc-grad)" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.9"/>
-      <line x1="${cx}" y1="${cy}" x2="${tipX.toFixed(2)}" y2="${tipY.toFixed(2)}" stroke="#3d2e3f" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="${cx}" cy="${cy}" r="7" fill="#3d2e3f"/>
+      <path d="M 22 110 A 78 78 0 0 1 178 110" stroke="#e2e8f0" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <path d="M 22 110 A 78 78 0 0 1 178 110" stroke="url(#hg-arc-grad)" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.95"/>
+      <line x1="${cx}" y1="${cy}" x2="${tipX.toFixed(2)}" y2="${tipY.toFixed(2)}" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="7" fill="#0f172a"/>
       <circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/>
     </svg>
     <div class="hg-score ${levelCls}">${scoreOut10}<small>/10</small></div>
     <div class="hg-label ${levelCls}">${label}</div>
     <div class="hg-tip">${esc(tipText)}</div>
+    <div class="hg-bars">${barsHtml}</div>
   `;
 }
 
