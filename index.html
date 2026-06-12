@@ -68,44 +68,57 @@ header select option { background: #1e293b; color: #f1f5f9; }
 /* ── 市場行情 Ticker ── */
 .ticker-bar {
   display: flex; align-items: stretch;
-  background: linear-gradient(180deg, #0a101f 0%, #0e1729 100%);
-  border-bottom: 1px solid rgba(245,158,11,0.16);
+  background: linear-gradient(180deg, #070c18 0%, #0d1526 100%);
+  border-bottom: 1px solid rgba(245,158,11,0.18);
+  box-shadow: inset 0 6px 12px -8px rgba(0,0,0,0.6);
   padding: 0 18px;
   overflow-x: auto;
   scrollbar-width: none;
   font-family: var(--num);
 }
 .ticker-bar::-webkit-scrollbar { display: none; }
+.tk-group {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 6px 0 16px; flex: 0 0 auto;
+}
+.tk-group:first-child { padding-left: 0; }
+.tk-group-bar { width: 3px; height: 26px; border-radius: 2px; background: linear-gradient(180deg, #38bdf8, #1d4ed8); }
+.tk-group.tw .tk-group-bar { background: linear-gradient(180deg, #fbbf24, #d97706); }
+.tk-group-txt { font-size: 10px; line-height: 1.3; color: #8b9bb4; font-weight: 700; letter-spacing: 1px; }
+.tk-group-txt small { display: block; font-size: 7.5px; color: #4e5d77; letter-spacing: 1.8px; font-weight: 600; }
 .tk-item {
   display: flex; align-items: center; gap: 13px;
-  padding: 9px 20px;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 9px 18px; min-width: 168px;
   white-space: nowrap; flex: 0 0 auto;
+  border-radius: 8px; margin: 5px 2px;
   transition: background 0.15s;
 }
-.tk-item:first-child { padding-left: 6px; }
-.tk-item:hover { background: rgba(255,255,255,0.035); }
-.tk-info { display: flex; flex-direction: column; gap: 4px; }
-.tk-label { font-size: 10.5px; color: #8b9bb4; font-weight: 600; letter-spacing: 0.5px; display: flex; gap: 6px; align-items: center; }
-.tk-label .tk-sym { color: #5b6b84; font-weight: 500; font-size: 9.5px; letter-spacing: 0.8px; }
-.tk-live-dot { width: 5px; height: 5px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.7); display: none; animation: tklive 1.6s ease-in-out infinite; }
+.tk-item + .tk-item { position: relative; }
+.tk-item + .tk-item::before { content: ''; position: absolute; left: -2px; top: 20%; bottom: 20%; width: 1px; background: rgba(255,255,255,0.05); }
+.tk-item:hover { background: rgba(255,255,255,0.045); }
+.tk-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.tk-label { font-size: 10.5px; color: #93a3bc; font-weight: 600; letter-spacing: 0.5px; display: flex; gap: 6px; align-items: center; }
+.tk-label .tk-sym { color: #586a86; font-weight: 600; font-size: 9px; letter-spacing: 1px; }
+.tk-live-dot { width: 5px; height: 5px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.8); display: none; animation: tklive 1.6s ease-in-out infinite; }
 .tk-item.live .tk-live-dot { display: inline-block; }
 @keyframes tklive { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 .tk-quote { display: flex; align-items: center; gap: 8px; }
-.tk-price { font-size: 16.5px; font-weight: 700; color: #f8fafc; font-variant-numeric: tabular-nums; letter-spacing: -0.2px; line-height: 1; }
+.tk-price { font-size: 17px; font-weight: 700; color: #ffffff; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; line-height: 1; text-shadow: 0 0 14px rgba(255,255,255,0.12); }
 .tk-chg-abs { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.tk-pill { font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 2.5px 7px; border-radius: 5px; line-height: 1.2; display: none; }
-.tk-chg-abs.up, .tk-pill.up { color: #f87171; }
-.tk-pill.up { background: rgba(220,38,38,0.18); border: 1px solid rgba(248,113,113,0.25); }
-.tk-chg-abs.dn, .tk-pill.dn { color: #34d399; }
-.tk-pill.dn { background: rgba(5,150,105,0.16); border: 1px solid rgba(52,211,153,0.22); }
+.tk-pill { font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 3px 7px; border-radius: 6px; line-height: 1.2; display: none; }
+.tk-chg-abs.up, .tk-pill.up { color: #ff7b72; }
+.tk-pill.up { background: rgba(239,68,68,0.20); border: 1px solid rgba(255,123,114,0.30); }
+.tk-chg-abs.dn, .tk-pill.dn { color: #2dd4a0; }
+.tk-pill.dn { background: rgba(13,148,103,0.18); border: 1px solid rgba(45,212,160,0.28); }
 .tk-chg-abs.flat, .tk-pill.flat { color: #94a3b8; }
 .tk-pill.flat { background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.18); }
-.tk-spark { width: 68px; height: 30px; flex: 0 0 auto; display: block; }
+.tk-spark { width: 70px; height: 32px; flex: 0 0 auto; display: block; }
 .tk-sparkwrap:empty { display: none; }
-@keyframes tkflash { 0% { background: rgba(245,158,11,0.14); } 100% { background: transparent; } }
+@keyframes tkflash { 0% { background: rgba(245,158,11,0.16); } 100% { background: transparent; } }
 .tk-item.flash { animation: tkflash 0.9s ease-out; }
-.tk-time { margin-left: auto; align-self: center; text-align: right; font-size: 9.5px; color: #54627a; padding-left: 16px; flex: 0 0 auto; line-height: 1.6; }
+.tk-time { margin-left: auto; align-self: center; text-align: right; font-size: 9.5px; color: #5b6b84; padding-left: 18px; flex: 0 0 auto; line-height: 1.7; }
+.tk-time .tk-mdot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #3e4d68; margin: 0 4px 1px 0; }
+.tk-time .tk-mdot.on { background: #fbbf24; box-shadow: 0 0 5px rgba(251,191,36,0.8); animation: tklive 1.6s ease-in-out infinite; }
 /* ── Main ── */
 main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 /* ── Hero summary ── */
@@ -2716,7 +2729,9 @@ function parseTWSEItem(item) {
     }
   }
   if (isNaN(price) || price <= 0) return null;
-  return { price, prev: isNaN(prev) ? price : prev };
+  const high = parseFloat(item.h), low = parseFloat(item.l);
+  return { price, prev: isNaN(prev) ? price : prev,
+           high: isNaN(high) ? null : high, low: isNaN(low) ? null : low };
 }
 
 // 批量查 TWSE 即時報價（一次請求所有股票）
@@ -2807,7 +2822,8 @@ async function fetchYahooTicker(symbol) {
     const price = res.meta?.regularMarketPrice ?? closes.at(-1);
     const prev  = res.meta?.chartPreviousClose ?? res.meta?.previousClose;
     if (price == null) return null;
-    return { price, prev: prev ?? price, spark: closes };
+    return { price, prev: prev ?? price, spark: closes,
+             high: res.meta?.regularMarketDayHigh ?? null, low: res.meta?.regularMarketDayLow ?? null };
   } catch(e) { return null; }
 }
 
@@ -2821,31 +2837,33 @@ function isMarketOpen(type) {
                        : (m >= 570 && m < 960);   // 09:30–16:00
 }
 
-// 迷你走勢圖：折線 + 漸層面積 + 昨收虛線基準
-function tkSparkSVG(gid, points, prev, dir) {
+// 迷你走勢圖：折線（微光暈）+ 漸層面積 + 昨收虛線基準；盤中時端點脈動
+function tkSparkSVG(gid, points, prev, dir, live) {
   let pts = points;
   if (pts.length > 40) {
     const step = pts.length / 40;
     pts = Array.from({ length: 40 }, (_, i) => pts[Math.floor(i * step)]);
     pts[pts.length - 1] = points[points.length - 1];
   }
-  const w = 68, h = 30, pad = 2.5;
+  const w = 70, h = 32, pad = 3;
   let min = Math.min(...pts), max = Math.max(...pts);
   if (prev != null) { min = Math.min(min, prev); max = Math.max(max, prev); }
   if (max - min < 1e-9) max = min + 1;
   const X = i => (pad + i * (w - 2*pad) / (pts.length - 1)).toFixed(1);
   const Y = v => (h - pad - (v - min) * (h - 2*pad) / (max - min)).toFixed(1);
   const line  = pts.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
-  const color = dir > 0 ? '#f87171' : dir < 0 ? '#34d399' : '#94a3b8';
+  const color = dir > 0 ? '#ff7b72' : dir < 0 ? '#2dd4a0' : '#94a3b8';
+  const ex = X(pts.length - 1), ey = Y(pts[pts.length - 1]);
   return `<svg class="tk-spark" viewBox="0 0 ${w} ${h}">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${color}" stop-opacity="0.28"/>
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.30"/>
       <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
     </linearGradient></defs>
     ${prev != null ? `<line x1="${pad}" y1="${Y(prev)}" x2="${w-pad}" y2="${Y(prev)}" stroke="rgba(148,163,184,0.35)" stroke-width="1" stroke-dasharray="2,3"/>` : ''}
-    <polygon points="${X(0)},${h-pad} ${line} ${X(pts.length-1)},${h-pad}" fill="url(#${gid})"/>
-    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${X(pts.length-1)}" cy="${Y(pts[pts.length-1])}" r="1.8" fill="${color}"/>
+    <polygon points="${X(0)},${h-pad} ${line} ${ex},${h-pad}" fill="url(#${gid})"/>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 2.5px ${color}66)"/>
+    ${live ? `<circle cx="${ex}" cy="${ey}" r="3.2" fill="${color}" opacity="0.35"><animate attributeName="r" values="2;4.5;2" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite"/></circle>` : ''}
+    <circle cx="${ex}" cy="${ey}" r="1.8" fill="${color}"/>
   </svg>`;
 }
 
@@ -2888,8 +2906,16 @@ function fmtTickerPrice(p) {
 }
 
 function initTicker() {
+  const GROUP_META = { us: { txt: '美股', sub: 'US MKT' }, tw: { txt: '台股', sub: 'TAIWAN' } };
   const bar = document.getElementById('ticker-bar');
-  bar.innerHTML = TICKER_ITEMS.map(it => `
+  let html = '', lastGroup = null;
+  for (const it of TICKER_ITEMS) {
+    if (it.type !== lastGroup) {
+      const g = GROUP_META[it.type];
+      html += `<div class="tk-group ${it.type}"><span class="tk-group-bar"></span><span class="tk-group-txt">${g.txt}<small>${g.sub}</small></span></div>`;
+      lastGroup = it.type;
+    }
+    html += `
     <div class="tk-item" id="tk-${it.id}">
       <div class="tk-info">
         <div class="tk-label"><span class="tk-live-dot"></span>${it.label}<span class="tk-sym">${it.sym}</span></div>
@@ -2900,7 +2926,9 @@ function initTicker() {
         </div>
       </div>
       <span class="tk-sparkwrap"></span>
-    </div>`).join('') + '<div class="tk-time" id="tk-time"></div>';
+    </div>`;
+  }
+  bar.innerHTML = html + '<div class="tk-time" id="tk-time"></div>';
   loadTicker();
   setInterval(loadTicker, 2 * 60 * 1000);
 }
@@ -2924,8 +2952,10 @@ async function loadTicker() {
     });
     if (updated) {
       const t = document.getElementById('tk-time');
+      const tw = isMarketOpen('tw'), us = isMarketOpen('us');
       if (t) t.innerHTML =
-        `台股${isMarketOpen('tw') ? '盤中' : '收盤'} · 美股${isMarketOpen('us') ? '盤中' : '收盤'}<br>` +
+        `<span class="tk-mdot${tw ? ' on' : ''}"></span>台股${tw ? '盤中' : '收盤'} · ` +
+        `<span class="tk-mdot${us ? ' on' : ''}"></span>美股${us ? '盤中' : '收盤'}<br>` +
         '更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
     }
   } finally { _tickerLoading = false; }
@@ -2949,9 +2979,15 @@ function renderTickerItem(it, q, spark) {
   pillEl.className = 'tk-pill ' + cls;
   pillEl.style.display = 'inline-block';
   pillEl.textContent = (dir > 0 ? '▲ ' : dir < 0 ? '▼ ' : '') + Math.abs(pct).toFixed(2) + '%';
-  el.classList.toggle('live', isMarketOpen(it.type));
+  const live = isMarketOpen(it.type);
+  el.classList.toggle('live', live);
+  const tip = [];
+  if (q.high != null) tip.push('高 ' + fmtTickerPrice(q.high));
+  if (q.low  != null) tip.push('低 ' + fmtTickerPrice(q.low));
+  tip.push('昨收 ' + fmtTickerPrice(q.prev));
+  el.title = `${it.label} ${it.sym}　${tip.join(' · ')}`;
   if (spark?.length >= 3) {
-    el.querySelector('.tk-sparkwrap').innerHTML = tkSparkSVG('tkg-' + it.id, spark, q.prev, dir);
+    el.querySelector('.tk-sparkwrap').innerHTML = tkSparkSVG('tkg-' + it.id, spark, q.prev, dir, live);
   }
   if (changed) {
     el.classList.remove('flash');
