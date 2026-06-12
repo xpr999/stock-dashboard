@@ -68,9 +68,8 @@ header select option { background: #1e293b; color: #f1f5f9; }
 /* ── 市場行情 Ticker ── */
 .ticker-bar {
   display: flex; align-items: stretch;
-  background: linear-gradient(180deg, #070c18 0%, #0d1526 100%);
+  background: #131722;
   border-bottom: 1px solid rgba(245,158,11,0.18);
-  box-shadow: inset 0 6px 12px -8px rgba(0,0,0,0.6);
   padding: 0 18px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -82,10 +81,9 @@ header select option { background: #1e293b; color: #f1f5f9; }
   padding: 0 6px 0 16px; flex: 0 0 auto;
 }
 .tk-group:first-child { padding-left: 0; }
-.tk-group-bar { width: 3px; height: 26px; border-radius: 2px; background: linear-gradient(180deg, #38bdf8, #1d4ed8); }
-.tk-group.tw .tk-group-bar { background: linear-gradient(180deg, #fbbf24, #d97706); }
-.tk-group-txt { font-size: 10px; line-height: 1.3; color: #8b9bb4; font-weight: 700; letter-spacing: 1px; }
-.tk-group-txt small { display: block; font-size: 7.5px; color: #4e5d77; letter-spacing: 1.8px; font-weight: 600; }
+.tk-group-bar { width: 3px; height: 26px; border-radius: 2px; background: #363a45; }
+.tk-group-txt { font-size: 10px; line-height: 1.3; color: #868b98; font-weight: 700; letter-spacing: 1px; }
+.tk-group-txt small { display: block; font-size: 7.5px; color: #565a66; letter-spacing: 1.8px; font-weight: 600; }
 .tk-item {
   display: flex; align-items: center; gap: 13px;
   padding: 9px 18px; min-width: 168px;
@@ -97,28 +95,28 @@ header select option { background: #1e293b; color: #f1f5f9; }
 .tk-item + .tk-item::before { content: ''; position: absolute; left: -2px; top: 20%; bottom: 20%; width: 1px; background: rgba(255,255,255,0.05); }
 .tk-item:hover { background: rgba(255,255,255,0.045); }
 .tk-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.tk-label { font-size: 10.5px; color: #93a3bc; font-weight: 600; letter-spacing: 0.5px; display: flex; gap: 6px; align-items: center; }
-.tk-label .tk-sym { color: #586a86; font-weight: 600; font-size: 9px; letter-spacing: 1px; }
-.tk-live-dot { width: 5px; height: 5px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.8); display: none; animation: tklive 1.6s ease-in-out infinite; }
+.tk-label { font-size: 10.5px; color: #9598a1; font-weight: 600; letter-spacing: 0.5px; display: flex; gap: 6px; align-items: center; }
+.tk-label .tk-sym { color: #5d616e; font-weight: 600; font-size: 9px; letter-spacing: 1px; }
+.tk-live-dot { width: 5px; height: 5px; border-radius: 50%; background: #fbbf24; display: none; animation: tklive 1.6s ease-in-out infinite; }
 .tk-item.live .tk-live-dot { display: inline-block; }
 @keyframes tklive { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 .tk-quote { display: flex; align-items: center; gap: 8px; }
-.tk-price { font-size: 17px; font-weight: 700; color: #ffffff; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; line-height: 1; text-shadow: 0 0 14px rgba(255,255,255,0.12); }
+.tk-price { font-size: 17px; font-weight: 700; color: #ffffff; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; line-height: 1; }
 .tk-chg-abs { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.tk-pill { font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 3px 7px; border-radius: 6px; line-height: 1.2; display: none; }
-.tk-chg-abs.up, .tk-pill.up { color: #ff7b72; }
-.tk-pill.up { background: rgba(239,68,68,0.20); border: 1px solid rgba(255,123,114,0.30); }
-.tk-chg-abs.dn, .tk-pill.dn { color: #2dd4a0; }
-.tk-pill.dn { background: rgba(13,148,103,0.18); border: 1px solid rgba(45,212,160,0.28); }
-.tk-chg-abs.flat, .tk-pill.flat { color: #94a3b8; }
-.tk-pill.flat { background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.18); }
+.tk-pill { font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 3px 8px; border-radius: 4px; line-height: 1.2; display: none; }
+.tk-chg-abs.up, .tk-pill.up { color: #f23645; }
+.tk-pill.up { background: rgba(242,54,69,0.14); }
+.tk-chg-abs.dn, .tk-pill.dn { color: #089981; }
+.tk-pill.dn { background: rgba(8,153,129,0.15); }
+.tk-chg-abs.flat, .tk-pill.flat { color: #787b86; }
+.tk-pill.flat { background: rgba(134,139,152,0.12); }
 .tk-spark { width: 70px; height: 32px; flex: 0 0 auto; display: block; }
 .tk-sparkwrap:empty { display: none; }
 @keyframes tkflash { 0% { background: rgba(245,158,11,0.16); } 100% { background: transparent; } }
 .tk-item.flash { animation: tkflash 0.9s ease-out; }
-.tk-time { margin-left: auto; align-self: center; text-align: right; font-size: 9.5px; color: #5b6b84; padding-left: 18px; flex: 0 0 auto; line-height: 1.7; }
-.tk-time .tk-mdot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #3e4d68; margin: 0 4px 1px 0; }
-.tk-time .tk-mdot.on { background: #fbbf24; box-shadow: 0 0 5px rgba(251,191,36,0.8); animation: tklive 1.6s ease-in-out infinite; }
+.tk-time { margin-left: auto; align-self: center; text-align: right; font-size: 9.5px; color: #6a6e79; padding-left: 18px; flex: 0 0 auto; line-height: 1.7; }
+.tk-time .tk-mdot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #363a45; margin: 0 4px 1px 0; }
+.tk-time .tk-mdot.on { background: #fbbf24; animation: tklive 1.6s ease-in-out infinite; }
 /* ── Main ── */
 main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 /* ── Hero summary ── */
@@ -2852,7 +2850,7 @@ function tkSparkSVG(gid, points, prev, dir, live) {
   const X = i => (pad + i * (w - 2*pad) / (pts.length - 1)).toFixed(1);
   const Y = v => (h - pad - (v - min) * (h - 2*pad) / (max - min)).toFixed(1);
   const line  = pts.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
-  const color = dir > 0 ? '#ff7b72' : dir < 0 ? '#2dd4a0' : '#94a3b8';
+  const color = dir > 0 ? '#f23645' : dir < 0 ? '#089981' : '#787b86';
   const ex = X(pts.length - 1), ey = Y(pts[pts.length - 1]);
   return `<svg class="tk-spark" viewBox="0 0 ${w} ${h}">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
@@ -2861,7 +2859,7 @@ function tkSparkSVG(gid, points, prev, dir, live) {
     </linearGradient></defs>
     ${prev != null ? `<line x1="${pad}" y1="${Y(prev)}" x2="${w-pad}" y2="${Y(prev)}" stroke="rgba(148,163,184,0.35)" stroke-width="1" stroke-dasharray="2,3"/>` : ''}
     <polygon points="${X(0)},${h-pad} ${line} ${ex},${h-pad}" fill="url(#${gid})"/>
-    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 2.5px ${color}66)"/>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${live ? `<circle cx="${ex}" cy="${ey}" r="3.2" fill="${color}" opacity="0.35"><animate attributeName="r" values="2;4.5;2" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite"/></circle>` : ''}
     <circle cx="${ex}" cy="${ey}" r="1.8" fill="${color}"/>
   </svg>`;
