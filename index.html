@@ -2786,7 +2786,9 @@ async function tryYahoo(code) {
 // ── 市場行情 Ticker（header 下方）─────────────────────────────────────────────
 const TICKER_ITEMS = [
   { id: 'SOX',    label: '費城半導體', sym: 'SOX',       type: 'us', ysym: '^SOX' },
+  { id: 'IXIC',   label: '那斯達克',   sym: 'NASDAQ',    type: 'us', ysym: '^IXIC' },
   { id: 'TSM',    label: '台積電 ADR', sym: 'TSM · US$', type: 'us', ysym: 'TSM' },
+  { id: 'TWII',   label: '台股加權',   sym: 'TAIEX',     type: 'tw', code: 't00',    ysym: '^TWII' },
   { id: '2330',   label: '台積電',     sym: '2330',      type: 'tw', code: '2330',   ysym: '2330.TW' },
   { id: '0050',   label: '元大台灣50', sym: '0050',      type: 'tw', code: '0050',   ysym: '0050.TW' },
   { id: '00631L', label: '台灣50正2',  sym: '00631L',    type: 'tw', code: '00631L', ysym: '00631L.TW' },
