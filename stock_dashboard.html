@@ -68,8 +68,8 @@ header select option { background: #1e293b; color: #f1f5f9; }
 /* ── 市場行情 Ticker ── */
 .ticker-bar {
   display: flex; align-items: stretch;
-  background: #0b1222;
-  border-bottom: 1px solid rgba(245,158,11,0.15);
+  background: linear-gradient(180deg, #0a101f 0%, #0e1729 100%);
+  border-bottom: 1px solid rgba(245,158,11,0.16);
   padding: 0 18px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -77,25 +77,35 @@ header select option { background: #1e293b; color: #f1f5f9; }
 }
 .ticker-bar::-webkit-scrollbar { display: none; }
 .tk-item {
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 8px 20px 9px; gap: 3px;
+  display: flex; align-items: center; gap: 13px;
+  padding: 9px 20px;
   border-right: 1px solid rgba(255,255,255,0.06);
   white-space: nowrap; flex: 0 0 auto;
   transition: background 0.15s;
 }
 .tk-item:first-child { padding-left: 6px; }
-.tk-item:hover { background: rgba(255,255,255,0.04); }
-.tk-label { font-size: 10.5px; color: #94a3b8; font-weight: 600; letter-spacing: 0.4px; display: flex; gap: 6px; align-items: baseline; }
-.tk-label .tk-sym { color: #64748b; font-weight: 500; font-size: 10px; }
-.tk-quote { display: flex; align-items: baseline; gap: 8px; }
-.tk-price { font-size: 15px; font-weight: 700; color: #f1f5f9; font-variant-numeric: tabular-nums; }
-.tk-chg { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.tk-chg.up { color: #f87171; }
-.tk-chg.dn { color: #34d399; }
-.tk-chg.flat { color: #94a3b8; }
+.tk-item:hover { background: rgba(255,255,255,0.035); }
+.tk-info { display: flex; flex-direction: column; gap: 4px; }
+.tk-label { font-size: 10.5px; color: #8b9bb4; font-weight: 600; letter-spacing: 0.5px; display: flex; gap: 6px; align-items: center; }
+.tk-label .tk-sym { color: #5b6b84; font-weight: 500; font-size: 9.5px; letter-spacing: 0.8px; }
+.tk-live-dot { width: 5px; height: 5px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.7); display: none; animation: tklive 1.6s ease-in-out infinite; }
+.tk-item.live .tk-live-dot { display: inline-block; }
+@keyframes tklive { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.tk-quote { display: flex; align-items: center; gap: 8px; }
+.tk-price { font-size: 16.5px; font-weight: 700; color: #f8fafc; font-variant-numeric: tabular-nums; letter-spacing: -0.2px; line-height: 1; }
+.tk-chg-abs { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tk-pill { font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 2.5px 7px; border-radius: 5px; line-height: 1.2; display: none; }
+.tk-chg-abs.up, .tk-pill.up { color: #f87171; }
+.tk-pill.up { background: rgba(220,38,38,0.18); border: 1px solid rgba(248,113,113,0.25); }
+.tk-chg-abs.dn, .tk-pill.dn { color: #34d399; }
+.tk-pill.dn { background: rgba(5,150,105,0.16); border: 1px solid rgba(52,211,153,0.22); }
+.tk-chg-abs.flat, .tk-pill.flat { color: #94a3b8; }
+.tk-pill.flat { background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.18); }
+.tk-spark { width: 68px; height: 30px; flex: 0 0 auto; display: block; }
+.tk-sparkwrap:empty { display: none; }
 @keyframes tkflash { 0% { background: rgba(245,158,11,0.14); } 100% { background: transparent; } }
 .tk-item.flash { animation: tkflash 0.9s ease-out; }
-.tk-time { margin-left: auto; align-self: center; font-size: 10px; color: #475569; padding-left: 16px; flex: 0 0 auto; }
+.tk-time { margin-left: auto; align-self: center; text-align: right; font-size: 9.5px; color: #54627a; padding-left: 16px; flex: 0 0 auto; line-height: 1.6; }
 /* ── Main ── */
 main { padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
 /* ── Hero summary ── */
@@ -2775,28 +2785,66 @@ async function tryYahoo(code) {
 
 // ── 市場行情 Ticker（header 下方）─────────────────────────────────────────────
 const TICKER_ITEMS = [
-  { id: 'SOX',    label: '費城半導體', sym: 'SOX',    type: 'us', symbol: '^SOX' },
-  { id: 'TSM',    label: '台積電 ADR', sym: 'TSM · US$', type: 'us', symbol: 'TSM' },
-  { id: '2330',   label: '台積電',     sym: '2330',   type: 'tw', code: '2330' },
-  { id: '0050',   label: '元大台灣50', sym: '0050',   type: 'tw', code: '0050' },
-  { id: '00631L', label: '台灣50正2',  sym: '00631L', type: 'tw', code: '00631L' },
+  { id: 'SOX',    label: '費城半導體', sym: 'SOX',       type: 'us', ysym: '^SOX' },
+  { id: 'TSM',    label: '台積電 ADR', sym: 'TSM · US$', type: 'us', ysym: 'TSM' },
+  { id: '2330',   label: '台積電',     sym: '2330',      type: 'tw', code: '2330',   ysym: '2330.TW' },
+  { id: '0050',   label: '元大台灣50', sym: '0050',      type: 'tw', code: '0050',   ysym: '0050.TW' },
+  { id: '00631L', label: '台灣50正2',  sym: '00631L',    type: 'tw', code: '00631L', ysym: '00631L.TW' },
 ];
 
-// 美股／指數：Yahoo v8 chart 走自建 proxy（Yahoo 無 CORS 且直連易 429）
-// range=2d：closes 倒數第 2 筆才是真正昨收（chartPreviousClose 是區間前一日，不可靠）
-async function fetchYahooQuote(symbol) {
+// Yahoo v8 chart 走自建 proxy（Yahoo 無 CORS 且直連易 429）
+// range=1d 一次拿三樣：現價、昨收（此時 chartPreviousClose 即前一交易日收盤）、盤中 5 分 K 走勢
+async function fetchYahooTicker(symbol) {
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=5m&range=1d`;
     const r = await fetchWithTimeout(PROXY + encodeURIComponent(url));
     if (!r.ok) return null;
     const res = (await r.json())?.chart?.result?.[0];
     if (!res) return null;
     const closes = (res.indicators?.quote?.[0]?.close ?? []).filter(x => x != null);
     const price = res.meta?.regularMarketPrice ?? closes.at(-1);
-    const prev  = closes.length >= 2 ? closes.at(-2) : res.meta?.chartPreviousClose;
+    const prev  = res.meta?.chartPreviousClose ?? res.meta?.previousClose;
     if (price == null) return null;
-    return { price, prev: prev ?? price };
+    return { price, prev: prev ?? price, spark: closes };
   } catch(e) { return null; }
+}
+
+// 開盤判斷（不含國定假日，僅供狀態燈顯示）
+function isMarketOpen(type) {
+  const tz = type === 'tw' ? 'Asia/Taipei' : 'America/New_York';
+  const t = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+  if (t.getDay() === 0 || t.getDay() === 6) return false;
+  const m = t.getHours() * 60 + t.getMinutes();
+  return type === 'tw' ? (m >= 540 && m <= 810)   // 09:00–13:30
+                       : (m >= 570 && m < 960);   // 09:30–16:00
+}
+
+// 迷你走勢圖：折線 + 漸層面積 + 昨收虛線基準
+function tkSparkSVG(gid, points, prev, dir) {
+  let pts = points;
+  if (pts.length > 40) {
+    const step = pts.length / 40;
+    pts = Array.from({ length: 40 }, (_, i) => pts[Math.floor(i * step)]);
+    pts[pts.length - 1] = points[points.length - 1];
+  }
+  const w = 68, h = 30, pad = 2.5;
+  let min = Math.min(...pts), max = Math.max(...pts);
+  if (prev != null) { min = Math.min(min, prev); max = Math.max(max, prev); }
+  if (max - min < 1e-9) max = min + 1;
+  const X = i => (pad + i * (w - 2*pad) / (pts.length - 1)).toFixed(1);
+  const Y = v => (h - pad - (v - min) * (h - 2*pad) / (max - min)).toFixed(1);
+  const line  = pts.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+  const color = dir > 0 ? '#f87171' : dir < 0 ? '#34d399' : '#94a3b8';
+  return `<svg class="tk-spark" viewBox="0 0 ${w} ${h}">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${prev != null ? `<line x1="${pad}" y1="${Y(prev)}" x2="${w-pad}" y2="${Y(prev)}" stroke="rgba(148,163,184,0.35)" stroke-width="1" stroke-dasharray="2,3"/>` : ''}
+    <polygon points="${X(0)},${h-pad} ${line} ${X(pts.length-1)},${h-pad}" fill="url(#${gid})"/>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(pts.length-1)}" cy="${Y(pts[pts.length-1])}" r="1.8" fill="${color}"/>
+  </svg>`;
 }
 
 // FinMind 單檔收盤（直接 CORS），ticker 備援用
@@ -2841,8 +2889,15 @@ function initTicker() {
   const bar = document.getElementById('ticker-bar');
   bar.innerHTML = TICKER_ITEMS.map(it => `
     <div class="tk-item" id="tk-${it.id}">
-      <div class="tk-label">${it.label}<span class="tk-sym">${it.sym}</span></div>
-      <div class="tk-quote"><span class="tk-price">—</span><span class="tk-chg flat"></span></div>
+      <div class="tk-info">
+        <div class="tk-label"><span class="tk-live-dot"></span>${it.label}<span class="tk-sym">${it.sym}</span></div>
+        <div class="tk-quote">
+          <span class="tk-price">—</span>
+          <span class="tk-chg-abs"></span>
+          <span class="tk-pill"></span>
+        </div>
+      </div>
+      <span class="tk-sparkwrap"></span>
     </div>`).join('') + '<div class="tk-time" id="tk-time"></div>';
   loadTicker();
   setInterval(loadTicker, 2 * 60 * 1000);
@@ -2854,39 +2909,47 @@ async function loadTicker() {
   _tickerLoading = true;
   try {
     const twCodes = TICKER_ITEMS.filter(i => i.type === 'tw').map(i => i.code);
-    const usItems = TICKER_ITEMS.filter(i => i.type === 'us');
-    const [twMap, ...usQuotes] = await Promise.all([
+    const [twMap, ...yh] = await Promise.all([
       fetchTickerTW(twCodes),
-      ...usItems.map(i => fetchYahooQuote(i.symbol)),
+      ...TICKER_ITEMS.map(i => fetchYahooTicker(i.ysym)),
     ]);
     let updated = false;
-    for (const it of TICKER_ITEMS) {
-      const q = it.type === 'tw' ? twMap[it.code] : usQuotes[usItems.indexOf(it)];
-      if (q && renderTickerItem(it.id, q)) updated = true;
-    }
+    TICKER_ITEMS.forEach((it, idx) => {
+      const y = yh[idx];
+      // 台股價格以 TWSE/FinMind 為準（盤中最即時），Yahoo 當最後備援；走勢圖一律用 Yahoo
+      const q = it.type === 'tw' ? (twMap[it.code] ?? y) : y;
+      if (q && renderTickerItem(it, q, y?.spark)) updated = true;
+    });
     if (updated) {
       const t = document.getElementById('tk-time');
-      if (t) t.textContent = '更新 ' + new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+      if (t) t.innerHTML =
+        `台股${isMarketOpen('tw') ? '盤中' : '收盤'} · 美股${isMarketOpen('us') ? '盤中' : '收盤'}<br>` +
+        '更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
     }
   } finally { _tickerLoading = false; }
 }
 
-function renderTickerItem(id, q) {
-  const el = document.getElementById('tk-' + id);
+function renderTickerItem(it, q, spark) {
+  const el = document.getElementById('tk-' + it.id);
   if (!el) return false;
   const priceEl = el.querySelector('.tk-price');
-  const chgEl   = el.querySelector('.tk-chg');
+  const absEl   = el.querySelector('.tk-chg-abs');
+  const pillEl  = el.querySelector('.tk-pill');
   const newText = fmtTickerPrice(q.price);
   const changed = priceEl.textContent !== '—' && priceEl.textContent !== newText;
   priceEl.textContent = newText;
   const diff = q.price - q.prev;
   const pct  = q.prev ? diff / q.prev * 100 : 0;
-  if (Math.abs(diff) < 1e-9) {
-    chgEl.className = 'tk-chg flat';
-    chgEl.textContent = '0.00 (0.00%)';
-  } else {
-    chgEl.className = 'tk-chg ' + (diff > 0 ? 'up' : 'dn');
-    chgEl.textContent = `${diff > 0 ? '▲' : '▼'} ${fmtTickerPrice(Math.abs(diff))} (${diff > 0 ? '+' : '-'}${Math.abs(pct).toFixed(2)}%)`;
+  const dir  = Math.abs(diff) < 1e-9 ? 0 : (diff > 0 ? 1 : -1);
+  const cls  = dir > 0 ? 'up' : dir < 0 ? 'dn' : 'flat';
+  absEl.className = 'tk-chg-abs ' + cls;
+  absEl.textContent = dir === 0 ? '0.00' : (dir > 0 ? '+' : '-') + fmtTickerPrice(Math.abs(diff));
+  pillEl.className = 'tk-pill ' + cls;
+  pillEl.style.display = 'inline-block';
+  pillEl.textContent = (dir > 0 ? '▲ ' : dir < 0 ? '▼ ' : '') + Math.abs(pct).toFixed(2) + '%';
+  el.classList.toggle('live', isMarketOpen(it.type));
+  if (spark?.length >= 3) {
+    el.querySelector('.tk-sparkwrap').innerHTML = tkSparkSVG('tkg-' + it.id, spark, q.prev, dir);
   }
   if (changed) {
     el.classList.remove('flash');
