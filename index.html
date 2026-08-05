@@ -986,7 +986,7 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
     <div class="chart-grid" style="padding:0 16px 16px">
       <div class="chart-box" style="grid-column:1/-1">
         <h3>📈 績效曲線</h3>
-        <div class="chart-subtitle">累計損益（帳戶總值 − 淨投入），零軸以上為賺</div>
+        <div class="chart-subtitle">累計總報酬（未實現＋已實現＋配息），與上方「賺了多少」同一定義</div>
         <div class="chart-wrap" style="height:280px"><canvas id="perfChart"></canvas></div>
       </div>
     </div>
@@ -2228,13 +2228,20 @@ function _buildGrowthChart(ctx, snaps) {
   });
 }
 
-// 累計損益曲線（帳戶總值 − 淨投入），零軸為基準，賺紅賠綠
+// 累計總報酬曲線（未實現＋已實現＋配息），零軸為基準，賺紅賠綠
+// 定義與「賺了多少」卡片一致，不使用 netInvested（資金流未持續登記，數字不可靠）
 function _buildProfitChart(ctx, snaps) {
   const pts = snaps.length;
   const UP = '#dc2626', DN = '#059669';
+  const trades = D.trades || [], divs = D.dividends || [];
   const rows = snaps.map(p => {
-    const invested = p.netInvested || p.cost || 0;
-    return { date: p.date, value: p.value || 0, invested, profit: (p.value || 0) - invested };
+    const cash   = p.cash || 0;
+    const cost   = p.cost || 0;
+    const mkt    = (p.value || 0) - cash;      // 快照 value = 市值 + 現金
+    const unreal = mkt - cost;
+    const real   = trades.reduce((a, t) => a + ((t.date || '') <= p.date ? (t.pnl    || 0) : 0), 0);
+    const div    = divs  .reduce((a, x) => a + ((x.date || '') <= p.date ? (x.amount || 0) : 0), 0);
+    return { date: p.date, mkt, cost, unreal, real, div, profit: unreal + real + div };
   });
 
   return new Chart(ctx, {
@@ -2275,16 +2282,19 @@ function _buildProfitChart(ctx, snaps) {
           callbacks: {
             label: c => {
               const r = rows[c.dataIndex];
-              const sign = r.profit >= 0 ? '+' : '';
-              const pct = r.invested > 0 ? `（${sign}${(r.profit / r.invested * 100).toFixed(1)}%）` : '';
-              return ` 累計損益：${sign}NT$${r.profit.toLocaleString('zh-TW',{maximumFractionDigits:0})}${pct}`;
+              const nt = v => (v >= 0 ? '+' : '') + 'NT$' + v.toLocaleString('zh-TW',{maximumFractionDigits:0});
+              const pct = r.cost > 0 ? `（${r.profit >= 0 ? '+' : ''}${(r.profit / r.cost * 100).toFixed(1)}%）` : '';
+              return ` 累計總報酬：${nt(r.profit)}${pct}`;
             },
             afterBody: items => {
               const r = rows[items[0].dataIndex];
-              return [
-                `帳戶總值：NT$${r.value.toLocaleString('zh-TW',{maximumFractionDigits:0})}`,
-                `淨投入：NT$${r.invested.toLocaleString('zh-TW',{maximumFractionDigits:0})}`,
-              ];
+              const nt = v => (v >= 0 ? '+' : '') + 'NT$' + v.toLocaleString('zh-TW',{maximumFractionDigits:0});
+              const out = [`未實現：${nt(r.unreal)}`];
+              if (r.real) out.push(`已實現：${nt(r.real)}`);
+              if (r.div)  out.push(`配息：${nt(r.div)}`);
+              out.push(`持股市值：NT$${r.mkt.toLocaleString('zh-TW',{maximumFractionDigits:0})}`);
+              out.push(`投入成本：NT$${r.cost.toLocaleString('zh-TW',{maximumFractionDigits:0})}`);
+              return out;
             }
           }
         }
