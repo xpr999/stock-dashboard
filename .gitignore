@@ -1,0 +1,14 @@
+# 機密：Firebase service account 金鑰（此 repo 是公開的）
+firebase_key.json
+
+# 資料備份與匯出（含個人財務資料）
+backup_*.json
+portfolio_data.json
+
+# 一次性腳本
+apply_swap_*.py
+whatif_*.py
+
+# 相依套件與雜物
+node_modules/
+.DS_Store

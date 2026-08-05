@@ -986,7 +986,7 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
     <div class="chart-grid" style="padding:0 16px 16px">
       <div class="chart-box" style="grid-column:1/-1">
         <h3>📈 績效曲線</h3>
-        <div class="chart-subtitle">帳戶總值（市值＋現金）vs 投入成本</div>
+        <div class="chart-subtitle">累計損益（帳戶總值 − 淨投入），零軸以上為賺</div>
         <div class="chart-wrap" style="height:280px"><canvas id="perfChart"></canvas></div>
       </div>
     </div>
@@ -2228,6 +2228,71 @@ function _buildGrowthChart(ctx, snaps) {
   });
 }
 
+// 累計損益曲線（帳戶總值 − 淨投入），零軸為基準，賺紅賠綠
+function _buildProfitChart(ctx, snaps) {
+  const pts = snaps.length;
+  const UP = '#dc2626', DN = '#059669';
+  const rows = snaps.map(p => {
+    const invested = p.netInvested || p.cost || 0;
+    return { date: p.date, value: p.value || 0, invested, profit: (p.value || 0) - invested };
+  });
+
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(r => r.date),
+      datasets: [{
+        label: '累計損益',
+        data: rows.map(r => r.profit),
+        borderColor: UP, borderWidth: 2, tension: 0.3,
+        pointRadius: pts > 30 ? 0 : 3,
+        pointBackgroundColor: rows.map(r => r.profit >= 0 ? UP : DN),
+        pointBorderColor: rows.map(r => r.profit >= 0 ? UP : DN),
+        fill: { target: { value: 0 }, above: 'rgba(220,38,38,0.12)', below: 'rgba(5,150,105,0.12)' },
+        segment: { borderColor: c => c.p1.parsed.y >= 0 ? UP : DN },
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { ticks: { font: { size: 11 }, maxTicksLimit: 8 }, grid: { display: false } },
+        y: {
+          grid: {
+            color:     c => c.tick.value === 0 ? 'rgba(15,23,42,0.35)' : 'rgba(0,0,0,0.05)',
+            lineWidth: c => c.tick.value === 0 ? 1.5 : 1,
+          },
+          ticks: {
+            font: { size: 11 },
+            callback: v => (v > 0 ? '+' : '') +
+              (Math.abs(v) >= 1e6 ? (v/1e4).toFixed(0) + '萬' : v.toLocaleString()),
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => {
+              const r = rows[c.dataIndex];
+              const sign = r.profit >= 0 ? '+' : '';
+              const pct = r.invested > 0 ? `（${sign}${(r.profit / r.invested * 100).toFixed(1)}%）` : '';
+              return ` 累計損益：${sign}NT$${r.profit.toLocaleString('zh-TW',{maximumFractionDigits:0})}${pct}`;
+            },
+            afterBody: items => {
+              const r = rows[items[0].dataIndex];
+              return [
+                `帳戶總值：NT$${r.value.toLocaleString('zh-TW',{maximumFractionDigits:0})}`,
+                `淨投入：NT$${r.invested.toLocaleString('zh-TW',{maximumFractionDigits:0})}`,
+              ];
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 function renderPerfChart() {
   const ctx = document.getElementById('perfChart');
   if (!ctx) return;
@@ -2237,7 +2302,7 @@ function renderPerfChart() {
     ctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--muted);padding:60px 0;font-size:13px">更新報價後自動記錄，累積資料後顯示曲線</p>';
     return;
   }
-  perfChartInst = _buildGrowthChart(ctx, snaps);
+  perfChartInst = _buildProfitChart(ctx, snaps);
 }
 
 function renderGrowthChart() {
