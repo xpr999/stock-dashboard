@@ -869,8 +869,8 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
       </div>
       <div class="chart-grid" style="padding-top:0">
         <div class="chart-box" style="grid-column:1/-1">
-          <h3>📈 帳戶總值曲線</h3>
-          <div class="chart-subtitle">帳戶總值（市值＋現金）vs 淨投入，間距＝總報酬</div>
+          <h3>📈 持股市值曲線</h3>
+          <div class="chart-subtitle">持股市值 vs 投入成本，間距＝未實現損益</div>
           <div class="chart-wrap" style="height:260px"><canvas id="growthChart"></canvas></div>
         </div>
       </div>
@@ -2170,23 +2170,30 @@ function renderCharts() {
 let growthChartInst = null;
 let perfChartInst = null;
 
+// 持股市值 vs 投入成本，兩線落差＝未實現損益
+// 不用 netInvested：資金流未持續登記，會低估投入而虛胖報酬
 function _buildGrowthChart(ctx, snaps) {
   const pts = snaps.length;
+  const rows = snaps.map(p => ({
+    date: p.date,
+    mkt:  (p.value || 0) - (p.cash || 0),
+    cost: p.cost || 0,
+  }));
   return new Chart(ctx, {
     type: 'line',
     data: {
-      labels: snaps.map(p => p.date),
+      labels: rows.map(r => r.date),
       datasets: [
         {
-          label: '帳戶總值',
-          data: snaps.map(p => p.value),
+          label: '持股市值',
+          data: rows.map(r => r.mkt),
           borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.08)',
           borderWidth: 2, pointRadius: pts > 30 ? 0 : 4,
           fill: true, tension: 0.3,
         },
         {
-          label: '淨投入',
-          data: snaps.map(p => p.netInvested || p.cost),
+          label: '投入成本',
+          data: rows.map(r => r.cost),
           borderColor: '#9ca3af', backgroundColor: 'transparent',
           borderWidth: 2, borderDash: [5,4], pointRadius: 0, tension: 0.3,
         }
@@ -2213,12 +2220,12 @@ function _buildGrowthChart(ctx, snaps) {
               return ` ${ctx.dataset.label}：NT$${v.toLocaleString('zh-TW',{maximumFractionDigits:0})}`;
             },
             afterBody: items => {
-              const total = items.find(i => i.dataset.label === '帳戶總值')?.raw;
-              const invested = items.find(i => i.dataset.label === '淨投入')?.raw;
-              if (total != null && invested != null && invested > 0) {
-                const ret = total - invested;
-                const pct = (ret / invested * 100).toFixed(1);
-                return [`總報酬：${ret >= 0 ? '+' : ''}NT$${ret.toLocaleString('zh-TW',{maximumFractionDigits:0})} (${pct}%)`];
+              const mkt  = items.find(i => i.dataset.label === '持股市值')?.raw;
+              const cost = items.find(i => i.dataset.label === '投入成本')?.raw;
+              if (mkt != null && cost > 0) {
+                const ret = mkt - cost;
+                const pct = (ret / cost * 100).toFixed(1);
+                return [`未實現損益：${ret >= 0 ? '+' : ''}NT$${ret.toLocaleString('zh-TW',{maximumFractionDigits:0})} (${pct}%)`];
               }
             }
           }
