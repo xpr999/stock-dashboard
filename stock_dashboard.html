@@ -2000,24 +2000,28 @@ function renderTrades() {
 }
 
 // ── Snapshot ───────────────────────────────────────────────────────────────────
-function saveSnapshot() {
+// 記錄快照。傳入 d 可為任一帳戶資料，不傳則用目前帳戶
+function saveSnapshot(d) {
+  d = d || D;
+  if (!d || !d.portfolio) return false;
   let totalVal = 0, totalCost = 0;
-  for (const s of D.portfolio) {
+  for (const s of d.portfolio) {
     const price = s.price ?? s.cost;
     totalVal  += price * s.shares * 1000;
     totalCost += s.cost  * s.shares * 1000;
   }
-  if (totalVal === 0) return;
+  if (totalVal === 0) return false;
   const today = new Date().toISOString().slice(0, 10);
   // 同一天只保留最新一筆
-  const flows = D.capitalFlows || [];
+  const flows = d.capitalFlows || [];
   const totalIn  = flows.filter(f => f.type === 'in').reduce((a, f) => a + f.amount, 0);
   const totalOutF = flows.filter(f => f.type === 'out').reduce((a, f) => a + f.amount, 0);
-  D.snapshots = D.snapshots.filter(p => p.date !== today);
-  const cashBal = D.cashBalance || 0;
-  D.snapshots.push({ date: today, value: Math.round(totalVal) + cashBal, cost: Math.round(totalCost), netInvested: totalIn - totalOutF, cash: cashBal });
+  d.snapshots = (d.snapshots || []).filter(p => p.date !== today);
+  const cashBal = d.cashBalance || 0;
+  d.snapshots.push({ date: today, value: Math.round(totalVal) + cashBal, cost: Math.round(totalCost), netInvested: totalIn - totalOutF, cash: cashBal });
   // 最多保留 365 筆
-  if (D.snapshots.length > 365) D.snapshots = D.snapshots.slice(-365);
+  if (d.snapshots.length > 365) d.snapshots = d.snapshots.slice(-365);
+  return true;
 }
 
 // ── Chart instances ────────────────────────────────────────────────────────────
@@ -3121,13 +3125,14 @@ async function refreshPrices() {
     } else { fail++; console.log(`[報價] ${code}: 失敗`); }
   }
 
-  // 儲存所有帳戶
+  // 每個帳戶都記錄快照後再儲存（不只目前帳戶，否則其他人的績效曲線會有缺口）
+  let snapped = 0;
   for (const [name, data] of Object.entries(allProfileData)) {
+    if (saveSnapshot(data)) snapped++;
     saveData(name, data);
   }
-  // 更新目前帳戶的 D 物件並存快照
+  console.log(`[快照] ${snapped}/${allProfiles.length} 個帳戶已記錄`);
   D = allProfileData[currentProfile];
-  saveSnapshot();
   render();
   btn.textContent = fail===0 ? '🔄 更新報價' : `🔄 更新報價（${fail}筆失敗）`;
   btn.disabled = false;
