@@ -837,9 +837,9 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
     </div>
     <div class="form-wrap" style="text-align:center;padding:20px">
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
-        賣出 A 買入 B，一鍵完成持股異動＋損益計算＋現金追蹤
+        賣出 A 買入 B（或純賣出），一鍵完成持股異動＋損益計算＋現金追蹤
       </p>
-      <button class="badd" onclick="openSwapWizard()" style="background:#6366f1;font-size:15px;padding:10px 32px">🔄 新增換股紀錄</button>
+      <button class="badd" onclick="openSwapWizard()" style="background:#6366f1;font-size:15px;padding:10px 32px">🔄 新增換股／賣出紀錄</button>
     </div>
   </div>
 
@@ -1039,7 +1039,7 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
       </div>
     </div>
     <div class="swap-section swap-buy">
-      <h3>📥 買入</h3>
+      <h3>📥 買入 <small style="font-weight:400;color:var(--muted)">（純賣出請全部留空）</small></h3>
       <div class="swap-row">
         <div class="swap-fg"><label>股票代號</label><input id="sw-buy-code" placeholder="如 00631L"></div>
         <div class="swap-fg"><label>張數</label><input id="sw-buy-shares" type="number" min="0.01" step="0.01" oninput="swapCalcSummary()"></div>
@@ -1050,7 +1050,7 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
     <div class="swap-fg" style="margin-bottom:14px"><label>備註（選填）</label><input id="sw-note" placeholder="如 換股策略"></div>
     <div class="swap-btns">
       <button class="bcancel" onclick="document.getElementById('swap-modal').style.display='none'">取消</button>
-      <button class="bconfirm" onclick="executeSwap()">⚡ 一鍵換股</button>
+      <button class="bconfirm" onclick="executeSwap()">⚡ 確認送出</button>
     </div>
   </div>
 </div>
@@ -3354,13 +3354,15 @@ function executeSwap() {
     alert('請填寫日期、賣出股票、張數、賣出價');
     return;
   }
-  if (!buyCode || isNaN(buyShares) || isNaN(buyPrice)) {
-    alert('請填寫買入股票、張數、買入價');
+  // 買入欄全空 → 純賣出；只填一部分 → 提醒補齊
+  const sellOnly = !buyCode && isNaN(buyShares) && isNaN(buyPrice);
+  if (!sellOnly && (!buyCode || isNaN(buyShares) || isNaN(buyPrice))) {
+    alert('請填寫買入股票、張數、買入價（純賣出請將買入欄全部留空）');
     return;
   }
 
   const sellAmt = Math.round(sellPrice * sellShares * 1000);
-  const buyAmt  = Math.round(buyPrice * buyShares * 1000);
+  const buyAmt  = sellOnly ? 0 : Math.round(buyPrice * buyShares * 1000);
 
   // 1. 找賣出股票的成本，計算已實現損益
   const sellEntry = D.portfolio.find(s => s.code === sellCode);
@@ -3376,8 +3378,10 @@ function executeSwap() {
   }
 
   // 3. 新增買入持股（合併同代號或新增）
-  const existing = D.portfolio.find(s => s.code === buyCode);
-  if (existing) {
+  const existing = sellOnly ? null : D.portfolio.find(s => s.code === buyCode);
+  if (sellOnly) {
+    // 純賣出，不新增持股
+  } else if (existing) {
     // 加權平均成本
     const oldTotal = existing.cost * existing.shares * 1000;
     existing.shares = Math.round((existing.shares + buyShares) * 100) / 100;
@@ -3394,17 +3398,21 @@ function executeSwap() {
   D.trades = D.trades || [];
   D.trades.push({
     id: String(D.nextTradeId++),
-    date, code: sellCode, action: '換股', shares: sellShares,
+    date, code: sellCode, action: sellOnly ? '賣出' : '換股', shares: sellShares,
     sellPrice, costPrice, pnl,
-    targetCode: buyCode,
-    note: note || `→ ${buyCode} ${buyShares}張 @ $${buyPrice}`,
+    targetCode: sellOnly ? null : buyCode,
+    note: note || (sellOnly ? '' : `→ ${buyCode} ${buyShares}張 @ $${buyPrice}`),
   });
 
   // 5. 現金變動 = 賣出 - 買入
   D.cashBalance = (D.cashBalance || 0) + sellAmt - buyAmt;
 
   // 6. 活動紀錄
-  logActivity('換股', `${sellCode} ${sellShares}張 @ $${sellPrice} → ${buyCode} ${buyShares}張 @ $${buyPrice} 損益${fmtPnl(pnl)}`);
+  if (sellOnly) {
+    logActivity('賣出', `${sellCode} ${sellShares}張 @ $${sellPrice} 損益${fmtPnl(pnl)}`);
+  } else {
+    logActivity('換股', `${sellCode} ${sellShares}張 @ $${sellPrice} → ${buyCode} ${buyShares}張 @ $${buyPrice} 損益${fmtPnl(pnl)}`);
+  }
 
   saveData(currentProfile, D);
   document.getElementById('swap-modal').style.display = 'none';
