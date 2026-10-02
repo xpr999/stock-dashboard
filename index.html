@@ -643,7 +643,7 @@ td.tri-col { color: #1d4ed8; font-weight: 600; }   /* 含息投報率：blue-700
   </div>
 </header>
 
-<!-- ── 市場行情 Ticker（SOX / TSM ADR / 2330 / 0050 / 00631L）── -->
+<!-- ── 市場行情 Ticker（SOX / TSM ADR / 加權 / 台指夜盤 / 2330 / 0050 / 00631L）── -->
 <div class="ticker-bar" id="ticker-bar"></div>
 
 <main>
@@ -2888,6 +2888,7 @@ const TICKER_ITEMS = [
   { id: 'IXIC',   label: '那斯達克',   sym: 'NASDAQ',    type: 'us', ysym: '^IXIC' },
   { id: 'TSM',    label: '台積電 ADR', sym: 'TSM · US$', type: 'us', ysym: 'TSM' },
   { id: 'TWII',   label: '台股加權',   sym: 'TAIEX',     type: 'tw', code: 't00',    ysym: '^TWII' },
+  { id: 'TXN',    label: '台指夜盤',   sym: 'TX 近月',   type: 'tw', session: 'night', prevLabel: '日盤收' },
   { id: '2330',   label: '台積電',     sym: '2330',      type: 'tw', code: '2330',   ysym: '2330.TW' },
   { id: '0050',   label: '元大台灣50', sym: '0050',      type: 'tw', code: '0050',   ysym: '0050.TW' },
   { id: '00631L', label: '台灣50正2',  sym: '00631L',    type: 'tw', code: '00631L', ysym: '00631L.TW' },
@@ -2911,12 +2912,43 @@ async function fetchYahooTicker(symbol) {
   } catch(e) { return null; }
 }
 
+// 台指期夜盤（期交所 MIS，只收 POST JSON，走自建 proxy）
+// 取近月合約（盤後代號以 -M 結尾）的報價 + 1 分 K 收盤價當走勢；參考價即日盤收盤
+async function postTaifex(path, body) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const r = await fetch(PROXY + encodeURIComponent('https://mis.taifex.com.tw/futures/api/' + path), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body), cache: 'no-cache', signal: ctrl.signal,
+    });
+    return r.ok ? (await r.json())?.RtData : null;
+  } finally { clearTimeout(t); }
+}
+
+async function fetchTaifexNight() {
+  try {
+    const list = await postTaifex('getQuoteList',
+      { MarketType: '1', SymbolType: 'F', KindID: '1', CID: 'TXF', ExpireMonth: '', RowSize: '全部', PageNo: '', SortColumn: '', AscDesc: 'A' });
+    const near = list?.QuoteList?.find(x => /^TXF.+-M$/.test(x.SymbolID));
+    const price = parseFloat(near?.CLastPrice), prev = parseFloat(near?.CRefPrice);
+    if (!(price > 0)) return null;
+    const chart = await postTaifex('getChartData1M', { SymbolID: near.SymbolID }).catch(() => null);
+    const ci = chart?.Field?.indexOf('C') ?? -1;
+    const spark = ci < 0 ? [] : (chart.Ticks ?? []).map(k => parseFloat(k[ci])).filter(v => v > 0);
+    return { price, prev: prev > 0 ? prev : price, spark,
+             high: parseFloat(near.CHighPrice) || null, low: parseFloat(near.CLowPrice) || null };
+  } catch(e) { return null; }
+}
+
 // 開盤判斷（不含國定假日，僅供狀態燈顯示）
+// 'night' = 期貨夜盤：週一～五 15:00 開盤，隔日 05:00 收盤
 function isMarketOpen(type) {
-  const tz = type === 'tw' ? 'Asia/Taipei' : 'America/New_York';
+  const tz = type === 'us' ? 'America/New_York' : 'Asia/Taipei';
   const t = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
-  if (t.getDay() === 0 || t.getDay() === 6) return false;
-  const m = t.getHours() * 60 + t.getMinutes();
+  const m = t.getHours() * 60 + t.getMinutes(), d = t.getDay();
+  if (type === 'night') return (d >= 1 && d <= 5 && m >= 900) || (d >= 2 && d <= 6 && m < 300);
+  if (d === 0 || d === 6) return false;
   return type === 'tw' ? (m >= 540 && m <= 810)   // 09:00–13:30
                        : (m >= 570 && m < 960);   // 09:30–16:00
 }
@@ -3022,23 +3054,23 @@ async function loadTicker() {
   if (_tickerLoading) return;
   _tickerLoading = true;
   try {
-    const twCodes = TICKER_ITEMS.filter(i => i.type === 'tw').map(i => i.code);
+    const twCodes = TICKER_ITEMS.filter(i => i.code).map(i => i.code);
     const [twMap, ...yh] = await Promise.all([
       fetchTickerTW(twCodes),
-      ...TICKER_ITEMS.map(i => fetchYahooTicker(i.ysym)),
+      ...TICKER_ITEMS.map(i => i.session === 'night' ? fetchTaifexNight() : fetchYahooTicker(i.ysym)),
     ]);
     let updated = false;
     TICKER_ITEMS.forEach((it, idx) => {
       const y = yh[idx];
       // 台股價格以 TWSE/FinMind 為準（盤中最即時），Yahoo 當最後備援；走勢圖一律用 Yahoo
-      const q = it.type === 'tw' ? (twMap[it.code] ?? y) : y;
+      const q = it.code ? (twMap[it.code] ?? y) : y;
       if (q && renderTickerItem(it, q, y?.spark)) updated = true;
     });
     if (updated) {
       const t = document.getElementById('tk-time');
-      const tw = isMarketOpen('tw'), us = isMarketOpen('us');
+      const tw = isMarketOpen('tw'), us = isMarketOpen('us'), night = isMarketOpen('night');
       if (t) t.innerHTML =
-        `<span class="tk-mdot${tw ? ' on' : ''}"></span>台股${tw ? '盤中' : '收盤'} · ` +
+        `<span class="tk-mdot${tw || night ? ' on' : ''}"></span>台股${tw ? '盤中' : night ? '夜盤' : '收盤'} · ` +
         `<span class="tk-mdot${us ? ' on' : ''}"></span>美股${us ? '盤中' : '收盤'}<br>` +
         '更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
     }
@@ -3063,12 +3095,12 @@ function renderTickerItem(it, q, spark) {
   pillEl.className = 'tk-pill ' + cls;
   pillEl.style.display = 'inline-block';
   pillEl.textContent = (dir > 0 ? '▲ ' : dir < 0 ? '▼ ' : '') + Math.abs(pct).toFixed(2) + '%';
-  const live = isMarketOpen(it.type);
+  const live = isMarketOpen(it.session ?? it.type);
   el.classList.toggle('live', live);
   const tip = [];
   if (q.high != null) tip.push('高 ' + fmtTickerPrice(q.high));
   if (q.low  != null) tip.push('低 ' + fmtTickerPrice(q.low));
-  tip.push('昨收 ' + fmtTickerPrice(q.prev));
+  tip.push((it.prevLabel ?? '昨收') + ' ' + fmtTickerPrice(q.prev));
   el.title = `${it.label} ${it.sym}　${tip.join(' · ')}`;
   if (spark?.length >= 3) {
     el.querySelector('.tk-sparkwrap').innerHTML = tkSparkSVG('tkg-' + it.id, spark, q.prev, dir, live);
